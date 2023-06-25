@@ -734,6 +734,8 @@ end
 
 function GG.Upgrades_WeaponNumMap(num)
 	if unitCreatedWeaponNums then
+		-- its hard to see how we would ever get here
+		-- unitCreatedWeaponNums is only non-nil if there is some callback from Upgrades_CreateUpgradedUnit()
 		return unitCreatedWeaponNums[num]
 	end
 	return false

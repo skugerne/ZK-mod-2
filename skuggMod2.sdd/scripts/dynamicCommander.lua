@@ -20,11 +20,16 @@ local isManual = {}
 local shields = {}
 local unitWeaponNames = {} -- Unit weapons by name
 local wepTable = UnitDefs[unitDefID].weapons
+
+-- loop over all possible weapons for the comm in question
 for num = 1, #wepTable do
 	local wd = WeaponDefs[wepTable[num].weaponDef]
 	if wd.type == "Shield" then
 		shields[#shields + 1] = num
 	end
+	-- convert a name like 0_commweapon_peashooter to commweapon_peashooter
+	-- the leading integer appears to refer to "boost" in gamedata/modularcomms/weapondefgen.lua, "boost" is apparently not used with dyncomms
+	-- in the case of dual-weilding the same type of weapon, there ends up being two stored indexes "num" and "num2"
 	local weaponName = string.sub(wd.name, (string.find(wd.name,"commweapon") or 0), 100)
 	if weaponName then
 		if unitWeaponNames[weaponName] then
@@ -43,6 +48,7 @@ local function IsManualFire(num)
 	return isManual[num]
 end
 
+-- this appears to scale animations in anticipation of larger models
 local levelScale = {
     [0] = 1,
     [1] = 1,
@@ -79,12 +85,18 @@ local function GetScale()
 	return scaleMult or CalculateScaleMult()
 end
 
+-- the parameter "num" refers to the index of the weapon in the list of possible weapons for the given commander type
+-- called quite often on all possible weapon definitions (for the commander type in question) in order to find out which ones are equipped
 local function GetWeapon(num)
+	-- GG.Upgrades_WeaponNumMap() only expects one param, so things can be expected to go badly
 	local retNum = GG.Upgrades_WeaponNumMap(unitID, num) or weaponNumMap[num]
 	if retNum then
+		-- weapons are set in UpdateWeapons()
 		return retNum
 	end
 	if not weaponsInitialized then
+		-- this seems like it would never happen, as UpdateWeapons() could not have been called yet
+		Spring.Log("GetWeapon", LOG.WARNING, "weaponNumMap not initialized for commander unitID " .. unitID)
 		local tempWeapon1 = Spring.GetUnitRulesParam(unitID, "comm_weapon_num_1")
 		local tempWeapon2 = Spring.GetUnitRulesParam(unitID, "comm_weapon_num_2")
 		local tempShield = Spring.GetUnitRulesParam(unitID, "comm_shield_num")
@@ -96,9 +108,12 @@ local function GetWeapon(num)
 			return 3
 		end
 	end
+	-- the weapon was not equipped
 	return false
 end
 
+-- the parameter "num" refers to the index of the weapon in the list of possible weapons for the given commander type
+-- the local var "weaponNum" is 1 or 2 (or maybe 3 for a shield)
 local function EmitWeaponFireSfx(pieceNum, num)
 	local weaponNum = GetWeapon(num)
 	if Spring.GetCEGID then
@@ -118,6 +133,8 @@ local function EmitWeaponFireSfx(pieceNum, num)
 	end
 end
 
+-- the parameter "num" refers to the index of the weapon in the list of possible weapons for the given commander type
+-- the local var "weaponNum" is 1 or 2 (or maybe 3 for a shield)
 local function EmitWeaponShotSfx(pieceNum, num)
 	local weaponNum = GetWeapon(num)
 	if Spring.GetCEGID then
@@ -166,6 +183,7 @@ local function UpdateWeaponProjectileSpeed(unitID, weaponNum, wd, range)
 	Spring.SetUnitWeaponState(unitID, weaponNum, "projectileSpeed", wantedSpeed)
 end
 
+-- called after a commander is created or upgraded
 local function UpdateWeapons(weaponName1, weaponName2, shieldName, rangeMult, damageMult)
 	local weaponDef1 = weaponName1 and unitWeaponNames[weaponName1]
 	local weaponDef2 = weaponName2 and unitWeaponNames[weaponName2]
@@ -200,6 +218,7 @@ local function UpdateWeapons(weaponName1, weaponName2, shieldName, rangeMult, da
 		Spring.SetUnitRulesParam(unitID, "comm_shield_max", 0, INLOS)
 	end
 	
+	-- map the index of all possible weapon choices (for the commander type in question) to 1, 2, or 3
 	weaponNumMap = {}
 	if weapon1 then
 		weaponNumMap[weapon1] = 1
