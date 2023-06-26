@@ -1184,18 +1184,18 @@ local chassisDefs = {
 			if level < 2 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			elseif level == 2 then
-				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 10
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 8
 			elseif level == 3 then
-				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 16
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 12
 			elseif level == 4 then
-				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 25
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 16
 			elseif level >= 5 then
-				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 35
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 25 + 5 * (level-5)
+				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 200 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + (1/30) * (level-5)
 			end
-			sharedData.speedMod = (sharedData.speedMod or 0) + 1
-			sharedData.healthBonus = (sharedData.healthBonus or 0) + 200
-			sharedData.damageMult = (sharedData.damageMult or 1) + 0.025
-			Spring.Echo("speedMod " .. sharedData.speedMod .. " | healthBonus " .. sharedData.healthBonus .. " | damageMult " .. sharedData.damageMult)
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("strike", GetStrikeCloneModulesString,
 			{
@@ -1212,10 +1212,15 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			Spring.Echo("Apply level-up function to Recon lvl " .. level .. ".")
-			sharedData.speedMod = (sharedData.speedMod or 0) + 1
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
-			sharedData.healthBonus = (sharedData.healthBonus or 0) + 100
-			sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02
+			if level > 5 then
+				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 100 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
+			end
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("recon", GetReconCloneModulesString,
 			{
@@ -1232,6 +1237,7 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			Spring.Echo("Apply level-up function to Engineer lvl " .. level .. ".")
+			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 1 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 2
 			elseif level == 2 then
@@ -1242,9 +1248,11 @@ local chassisDefs = {
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 9
 			elseif level >= 5 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 12
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 100 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
-			sharedData.healthBonus = (sharedData.healthBonus or 0) + 300
-			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("support", GetSupportCloneModulesString,
 			{
@@ -1269,13 +1277,12 @@ local chassisDefs = {
 				sharedData.drones = (sharedData.drones or 0) + 2
 			else
 				sharedData.drones = (sharedData.drones or 0) + 3
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 400 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 3 * (level-5)
 			end
-			if level >= 4 then
-				sharedData.droneheavyslows = (sharedData.droneheavyslows or 0) + 1
-			end
-			sharedData.healthBonus = (sharedData.healthBonus or 0) + 400 * level  -- armor added faster than linear
-			sharedData.damageMult = (sharedData.damageMult or 1) + 0.01
-			sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("assault", GetAssaultCloneModulesString,
 			{
