@@ -260,9 +260,11 @@ local function GetModuleEffectsData(moduleList, level, chassis)
 		end
 	end
 	
-	local levelFunction = chassisDefs[chassis or 1].levelDefs[math.min(chassisDefs[chassis or 1].maxNormalLevel, level or 1)].chassisApplicationFunction
-	if levelFunction then
-		levelFunction(moduleByDefID, moduleEffectData)
+	if chassis then
+		chassisDefs[chassis].chassisApplicationFunction(level, moduleByDefID, moduleEffectData)
+	else
+		-- is this something that can actually happen?
+		Spring.Log("GetModuleEffectsData", LOG.WARNING, "Chassis evaluates to false.")
 	end
 	
 	return moduleEffectData

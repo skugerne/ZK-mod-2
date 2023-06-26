@@ -1208,11 +1208,11 @@ local chassisDefs = {
 			sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02
 		end,
 		levelDefs = levelDefGenerator("recon", GetReconCloneModulesString,
-		{
-			defaultModule = moduleDefNames.recon.commweapon_disruptorbomb,
-			slotAllows = {"adv_weapon"},
-		}
-	)
+			{
+				defaultModule = moduleDefNames.recon.commweapon_disruptorbomb,
+				slotAllows = {"adv_weapon"},
+			}
+		)
 	},
 	{
 		name = "support",
@@ -1237,11 +1237,11 @@ local chassisDefs = {
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 		end,
 		levelDefs = levelDefGenerator("support", GetSupportCloneModulesString,
-		{
-			defaultModule = moduleDefNames.support.commweapon_disruptorbomb,
-			slotAllows = {"adv_weapon"},
-		}
-	)
+			{
+				defaultModule = moduleDefNames.support.commweapon_disruptorbomb,
+				slotAllows = {"adv_weapon"},
+			}
+		)
 	},
 	{
 		name = "assault",
@@ -1249,7 +1249,7 @@ local chassisDefs = {
 		baseUnitDef = UnitDefNames and UnitDefNames["dynassault0"].id,
 		extraLevelCostFunction = morphCost,
 		maxNormalLevel = maxCommLevel,
-		secondPeashooter = true,
+		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			Spring.Echo("Apply level-up function to Guardian lvl " .. level .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
@@ -1268,11 +1268,11 @@ local chassisDefs = {
 			sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01
 		end,
 		levelDefs = levelDefGenerator("assault", GetAssaultCloneModulesString,
-		{
-			defaultModule = moduleDefNames.assault.commweapon_beamlaser_adv,
-			slotAllows = {"adv_weapon", "basic_weapon"},
-		}
-	)
+			{
+				defaultModule = moduleDefNames.assault.commweapon_beamlaser_adv,
+				slotAllows = {"adv_weapon", "basic_weapon"},
+			}
+		)
 	},
 	{
 		name = "knight",
@@ -1287,11 +1287,11 @@ local chassisDefs = {
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 		end,
 		levelDefs = levelDefGenerator("knight", GetKnightCloneModulesString,
-		{
-			defaultModule = moduleDefNames.knight.commweapon_beamlaser_adv,
-			slotAllows = {"adv_weapon", "basic_weapon"},
-		}
-	)
+			{
+				defaultModule = moduleDefNames.knight.commweapon_beamlaser_adv,
+				slotAllows = {"adv_weapon", "basic_weapon"},
+			}
+		)
 	},
 }
 
