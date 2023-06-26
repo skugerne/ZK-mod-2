@@ -219,22 +219,22 @@ end
 -- Must match dynamic_comm_defs.lua around line 800 (top of the chassis defs)
 --------------------------------------------------------------------------------------
 MakeCommanderChassisClones("dynrecon",
-	{{0}, {1}, {1}, {1}, {1}},
+	{{1}, {1}, {1}, {1}, {1}},
 	{"module_personal_shield"}
 )
 
 MakeCommanderChassisClones("dynsupport",
-	{{0, 0, 0}, {1, 0, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
+  {{1, 0, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
 	{"module_personal_shield", "module_areashield", "module_resurrect"}
 )
 
 MakeCommanderChassisClones("dynassault",
-	{{0, 0}, {1, 0}, {1, 1}, {1, 1}, {1, 1}},
+	{{1, 0}, {1, 0}, {1, 1}, {1, 1}, {1, 1}},
 	{"module_personal_shield", "module_areashield"}
 )
 
 MakeCommanderChassisClones("dynstrike",
-	{{0, 0}, {1, 0}, {1, 1}, {1, 1}, {1, 1}},
+	{{1, 0}, {1, 1}, {1, 1}, {1, 1}, {1, 1}},
 	{"module_personal_shield", "module_areashield"}
 )
 

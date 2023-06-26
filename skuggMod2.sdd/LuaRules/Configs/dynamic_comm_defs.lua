@@ -1094,7 +1094,9 @@ local function morphBuildPower(level)
 	return 5
 end
 
-local maxCommLevel = 20      -- not really max, but the point where freebies stop
+local maxCommLevel = 20      -- not really max, but the point there are no more innate level bonuses
+
+-- build data for the chassisDefs table (one list for each commander chassis entry)
 local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponSlot)
 	local res = {
 		[0] = {
@@ -1113,13 +1115,20 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 		local modelNum = math.ceil(i/2)
 		if modelNum > 5 then
 			modelNum = 5           -- we have 5 models per comm, use them up to level 10
-		end
+		end                        -- sure would be nice to know how to scale an existing model!
 
 		res[i] = {
 			morphBuildPower = morphBuildPower(i),
 			morphBaseCost = morphCost(i),
 			morphUnitDefFunction = function(modulesByDefID)
-				return UnitDefNames["dyn" .. commname .. modelNum .. "_" .. cloneModulesStringFunc(modulesByDefID)].id
+				local defname = "dyn" .. commname .. modelNum .. "_" .. cloneModulesStringFunc(modulesByDefID)
+				local definfo = UnitDefNames[defname]
+				if definfo then
+					return UnitDefNames[defname].id
+				else
+					Spring.Log("levelDefGenerator", LOG.WARNING, "Unit def " .. defname .. " is undefined.")
+					return nil   -- breaks the comm
+				end
 			end
 		}
 
@@ -1186,6 +1195,7 @@ local chassisDefs = {
 			sharedData.speedMod = (sharedData.speedMod or 0) + 1
 			sharedData.healthBonus = (sharedData.healthBonus or 0) + 200
 			sharedData.damageMult = (sharedData.damageMult or 1) + 0.025
+			Spring.Echo("speedMod " .. sharedData.speedMod .. " | healthBonus " .. sharedData.healthBonus .. " | damageMult " .. sharedData.damageMult)
 		end,
 		levelDefs = levelDefGenerator("strike", GetStrikeCloneModulesString,
 			{
