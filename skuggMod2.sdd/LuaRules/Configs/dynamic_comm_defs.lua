@@ -1180,6 +1180,8 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
+			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			level = level + 1
 			Spring.Echo("Apply level-up function to Strike lvl " .. level .. ".")
 			if level < 2 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
@@ -1211,6 +1213,8 @@ local chassisDefs = {
 		extraLevelCostFunction = morphCost,
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
+			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			level = level + 1
 			Spring.Echo("Apply level-up function to Recon lvl " .. level .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level > 5 then
@@ -1236,6 +1240,8 @@ local chassisDefs = {
 		extraLevelCostFunction = morphCost,
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
+			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			level = level + 1
 			Spring.Echo("Apply level-up function to Engineer lvl " .. level .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 1 then
@@ -1269,6 +1275,8 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
+			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			level = level + 1
 			Spring.Echo("Apply level-up function to Guardian lvl " .. level .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level < 2 then
@@ -1300,6 +1308,8 @@ local chassisDefs = {
 		notSelectable = (Spring.GetModOptions().campaign_chassis ~= "1"),
 		secondPeashooter = true,
 		chassisApplicationFunction = function (level, modules, sharedData)
+			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			level = level + 1
 			Spring.Echo("Apply level-up function to Knight (comm) lvl " .. level .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 		end,
