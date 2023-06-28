@@ -1,8 +1,8 @@
 return {
-	name = 'Another Skugg Zero-K Mod',
-	description = 'A mod to explore ideas and screw around',
-	shortname = 'skuggmod2',
-	version = 'v1',
+	name = 'Skugg Supercomm Mod (dev)',   -- remove dev before packaging to sdz
+	description = 'A mod to explore time-limited but otherwise unbalanced commander upgrades.',
+	shortname = 'skugg-s-c-mod-dev',      -- remove dev before packaging to sdz
+	version = 'v1',                       -- increment sometimes
 	mutator = '1',
 	game = '',
 	shortGame = '',
