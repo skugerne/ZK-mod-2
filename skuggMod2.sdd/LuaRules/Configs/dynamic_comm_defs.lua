@@ -1181,20 +1181,25 @@ local chassisDefs = {
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
-			level = level + 1
-			Spring.Echo("Apply level-up function to Strike lvl " .. level .. ".")
+			Spring.Echo("Apply level-up function to Strike lvl " .. level .. " -> " .. (level+1) .. ".")
 			if level < 2 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			elseif level == 2 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 8
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 400   -- looking for 4600 total (4200)
 			elseif level == 3 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 12
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1000  -- looking for 5200 total
 			elseif level == 4 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 16
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1600  -- looking for 5800 total
 			elseif level >= 5 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 25 + 5 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 2200  -- looking for 6400 total
+			end
+			if level > 5 then
 				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
-				sharedData.healthBonus = (sharedData.healthBonus or 0) + 200 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 300 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + (1/30) * (level-5)
 			end
 			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
@@ -1214,12 +1219,20 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
-			level = level + 1
-			Spring.Echo("Apply level-up function to Recon lvl " .. level .. ".")
+			Spring.Echo("Apply level-up function to Recon lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
+			if level == 2 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 150   -- looking for 3400 total (3250)
+			elseif level == 3 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 350   -- looking for 3600 total
+			elseif level == 4 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 550   -- looking for 3800 total
+			elseif level >= 5 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 750   -- looking for 4000 total
+			end
 			if level > 5 then
 				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
-				sharedData.healthBonus = (sharedData.healthBonus or 0) + 100 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 150 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
 				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
@@ -1241,20 +1254,25 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
-			level = level + 1
-			Spring.Echo("Apply level-up function to Engineer lvl " .. level .. ".")
+			Spring.Echo("Apply level-up function to Engineer lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 1 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 2
 			elseif level == 2 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 4
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 200   -- looking for 4000 total (3800)
 			elseif level == 3 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 6
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 500   -- looking for 4300 total
 			elseif level == 4 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 9
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 800   -- looking for 4600 total
 			elseif level >= 5 then
 				sharedData.bonusBuildPower = (sharedData.bonusBuildPower or 0) + 12
-				sharedData.healthBonus = (sharedData.healthBonus or 0) + 100 * (level-5)
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1200  -- looking for 5000 total
+			end
+			if level > 5 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 200 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
@@ -1276,15 +1294,25 @@ local chassisDefs = {
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
-			level = level + 1
-			Spring.Echo("Apply level-up function to Guardian lvl " .. level .. ".")
+			Spring.Echo("Apply level-up function to Guardian lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
+			if level == 2 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 600   -- looking for 5000 total (4400)
+			elseif level == 3 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1300  -- looking for 5700 total
+			elseif level == 4 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 2200  -- looking for 6600 total
+			elseif level >= 5 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 3200  -- looking for 7600 total
+			end
 			if level < 2 then
 				sharedData.drones = (sharedData.drones or 0) + 1
 			elseif level < 5 then
 				sharedData.drones = (sharedData.drones or 0) + 2
 			else
 				sharedData.drones = (sharedData.drones or 0) + 3
+			end
+			if level > 5 then
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 400 * (level-5)
 				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
@@ -1309,9 +1337,23 @@ local chassisDefs = {
 		secondPeashooter = true,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
-			level = level + 1
-			Spring.Echo("Apply level-up function to Knight (comm) lvl " .. level .. ".")
+			Spring.Echo("Apply level-up function to Knight (comm) lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
+			if level == 2 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 400   -- looking for 4600 total (4200)
+			elseif level == 3 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1000  -- looking for 5200 total
+			elseif level == 4 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 1600  -- looking for 5800 total
+			elseif level >= 5 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 2200  -- looking for 6400 total
+			end
+			if level > 5 then
+				sharedData.healthBonus = (sharedData.healthBonus or 0) + 300 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
+				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 3 * (level-5)
+			end
 		end,
 		levelDefs = levelDefGenerator("knight", GetKnightCloneModulesString,
 			{
