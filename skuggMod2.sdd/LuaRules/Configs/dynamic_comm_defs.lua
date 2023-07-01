@@ -964,6 +964,78 @@ for i = 1, #moduleDefs do
 	end
 end
 
+-- hack on some new modules without messing up the ordering of those previously defined
+moreModuleDefs = {
+	{
+		name = "module_plot_armor",
+		humanName = "Plot Armor",
+		description = "Plot Armor - Provides " .. 5000*HP_MULT .. " health without penalty." ..
+		"Limit: 1, Requires High Density Plating",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_heavy_armor"},
+		requireLevel = 12,
+		requireChassis = {"strike", "recon", "support"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 5000*HP_MULT
+		end
+	},
+	{
+		name = "module_deep_plot_armor",
+		humanName = "Deep Plot Armor",
+		description = "Deep Plot Armor - Provides " .. 5000*HP_MULT .. " health while adding 2% total speed." ..
+		"Limit: 1, Requires Plot Armor",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_plot_armor"},
+		requireLevel = 15,
+		requireChassis = {"strike", "recon", "support"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 5000*HP_MULT
+			sharedData.speedMultPost = (sharedData.speedMultPost or 1) + 0.02
+		end
+	},
+	{
+		name = "module_plot_armor",
+		humanName = "Plot Armor",
+		description = "Plot Armor - Provides " .. 7000*HP_MULT .. " health without penalty." ..
+		"Limit: 1, Requires High Density Plating",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_heavy_armor"},
+		requireLevel = 12,
+		requireChassis = {"assault", "knight"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 7000*HP_MULT
+		end
+	},
+	{
+		name = "module_deep_plot_armor",
+		humanName = "Deep Plot Armor",
+		description = "Deep Plot Armor - Provides " .. 10000*HP_MULT .. " health without penalty." ..
+		"Limit: 1, Requires Plot Armor",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_plot_armor"},
+		requireLevel = 15,
+		requireChassis = {"assault", "knight"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 10000*HP_MULT
+		end
+	}
+}
+for i=1,#moreModuleDefs do
+	moduleDefs[#moduleDefs+1] = moreModuleDefs[i]
+end
+
 --[[ Stochastic check for module IDs,
      not perfect but should do its job.
      See the error message below. ]]
@@ -1083,7 +1155,8 @@ local specificBuildPowers = {
 	15,
 	12.5,
 	10,
-	7,5
+	7,5,
+	5
 }
 
 -- assign build powers for levels that exceed the table above
@@ -1091,7 +1164,7 @@ local function morphBuildPower(level)
 	if level > 0 and level < #specificBuildPowers then
 		return specificBuildPowers[level]
 	end
-	return 5
+	return 3   -- build power eventually settles down at only 3
 end
 
 local maxCommLevel = 20      -- not really max, but the point there are no more innate level bonuses
