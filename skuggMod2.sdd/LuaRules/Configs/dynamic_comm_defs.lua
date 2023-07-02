@@ -1183,8 +1183,6 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 	}
 
 	for i = 1, maxCommLevel do
-		Spring.Echo("Do idx " .. i .. " for comm " .. commname .. ".")
-
 		local modelNum = math.ceil(i/2)
 		if modelNum > 5 then
 			modelNum = 5           -- we have 5 models per comm, use them up to level 10
@@ -1275,7 +1273,7 @@ local chassisDefs = {
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 300 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + (1/30) * (level-5)
 			end
-			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("strike", GetStrikeCloneModulesString,
 			{
@@ -1310,7 +1308,7 @@ local chassisDefs = {
 				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
-			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("recon", GetReconCloneModulesString,
 			{
@@ -1349,7 +1347,7 @@ local chassisDefs = {
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
-			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("support", GetSupportCloneModulesString,
 			{
@@ -1391,7 +1389,7 @@ local chassisDefs = {
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 3 * (level-5)
 			end
-			Spring.Echo("speedMod " .. (sharedData.speedMod or 1) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
+			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
 		levelDefs = levelDefGenerator("assault", GetAssaultCloneModulesString,
 			{
