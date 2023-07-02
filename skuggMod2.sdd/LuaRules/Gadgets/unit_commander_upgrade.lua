@@ -272,14 +272,6 @@ end
 
 local function InitializeDynamicCommander(unitID, level, chassis, totalCost, name, baseUnitDefID, baseWreckID, baseHeapID, moduleList, moduleEffectData, images, profileID, staticLevel)
 
-	-- get larger based on level (FIXME: change to scale based on hitpoints)
-	-- the model is also being changed (currently at lvl2, 4, 6, 8 and 10)
-	if level > 2 then
-		local scale = 1 + (level - 1)/40
-		Spring.Log("GetModuleEffectsData", LOG.WARNING, "Scale lvl ".. level .." comm to ".. scale .. "X.")
-		GG.UnitScale(unitID, scale)
-	end
-
 	-- This function sets the UnitRulesParams and updates the unit attributes after
 	-- a commander has been created. This can either happen internally due to a request
 	-- to spawn a commander or with rezz/construction/spawning.
@@ -320,6 +312,15 @@ local function InitializeDynamicCommander(unitID, level, chassis, totalCost, nam
 	end
 	SetUnitRulesModuleCounts(unitID, counts)
 	
+	-- get larger based on level
+	-- scaling by even 33% is quite a bit visually
+	-- the model is also being changed (currently at lvl2, 4, 6, 8 and 10)
+	if level > 2 and moduleEffectData.healthBonus and moduleEffectData.healthBonus > 6000 then
+		local scale = 1 + (moduleEffectData.healthBonus-6000)/50000
+		Spring.Echo("Scale lvl ".. level .." comm to ".. scale .. "X.")
+		GG.UnitScale(unitID, scale)
+	end
+
 	ApplyModuleEffects(unitID, moduleEffectData, totalCost, images or {})
 	
 	if staticLevel then

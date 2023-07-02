@@ -2,7 +2,7 @@ return {
 	name = 'Skugg Supercomm Mod (dev)',   -- remove dev before packaging to sdz
 	description = 'A mod to explore time-limited but otherwise unbalanced commander upgrades.',
 	shortname = 'skugg-s-c-mod-dev',      -- remove dev before packaging to sdz
-	version = 'v4',                       -- increment sometimes (can not overwrite something already uploaded)
+	version = 'v5',                       -- increment sometimes (can not overwrite something already uploaded)
 	mutator = '1',
 	game = '',
 	shortGame = '',
