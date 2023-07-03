@@ -185,6 +185,8 @@ end
 
 -- called after a commander is created or upgraded
 local function UpdateWeapons(weaponName1, weaponName2, shieldName, rangeMult, damageMult)
+	-- 'rangeMult' and 'damageMult' are from the commander module and chassis properties object
+
 	local weaponDef1 = weaponName1 and unitWeaponNames[weaponName1]
 	local weaponDef2 = weaponName2 and unitWeaponNames[weaponName2]
 	local shieldDef = shieldName and unitWeaponNames[shieldName]
@@ -290,6 +292,7 @@ local function UpdateWeapons(weaponName1, weaponName2, shieldName, rangeMult, da
 	
 	if weapon1 then
 		if weapon2 then
+			-- TODO: consider making the shortest-range weapon into the primary
 			local reload1 = Spring.GetUnitWeaponState(unitID, weapon1, 'reloadTime')
 			local reload2 = Spring.GetUnitWeaponState(unitID, weapon2, 'reloadTime')
 			if reload1 > reload2 then

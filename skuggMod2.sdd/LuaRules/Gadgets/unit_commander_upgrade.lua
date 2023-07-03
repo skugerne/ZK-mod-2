@@ -84,6 +84,8 @@ local function SetUnitRulesModuleCounts(unitID, counts)
 end
 
 local function ApplyWeaponData(unitID, weapon1, weapon2, shield, rangeMult, damageMult)
+	-- 'rangeMult' and 'damageMult' are from the commander module and chassis properties object
+
 	if (not weapon2) and weapon1 then
 		local weaponName = "0_" .. weapon1
 		local wd = WeaponDefNames[weaponName]
