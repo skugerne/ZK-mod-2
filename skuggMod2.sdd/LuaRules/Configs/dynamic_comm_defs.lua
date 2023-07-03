@@ -63,7 +63,7 @@ local moduleDefs = {
 		image = "LuaUI/Images/dynamic_comm_menu/cross.png",
 		limit = false,
 		emptyModule = true,
-		cost = 0,
+		cost = 100 * COST_MULT,  -- make it not free to discourage rushing for high level
 		requireLevel = 0,
 		slotType = "module",
 	},
@@ -86,7 +86,7 @@ local moduleDefs = {
 		image = "LuaUI/Images/dynamic_comm_menu/cross.png",
 		limit = false,
 		emptyModule = true,
-		cost = 0 * COST_MULT,
+		cost = 0,
 		requireLevel = 0,
 		slotType = "adv_weapon",
 	},
@@ -97,7 +97,7 @@ local moduleDefs = {
 		image = "LuaUI/Images/dynamic_comm_menu/cross.png",
 		limit = false,
 		emptyModule = true,
-		cost = 0 * COST_MULT,
+		cost = 0,
 		requireLevel = 0,
 		slotType = "dual_basic_weapon",
 	},
@@ -969,34 +969,73 @@ moreModuleDefs = {
 	{
 		name = "module_plot_armor",
 		humanName = "Plot Armor",
-		description = "Plot Armor - Provides " .. 5000*HP_MULT .. " health without penalty." ..
+		description = "Plot Armor - Provides " .. 5000*HP_MULT .. " health while adding 2% total speed." ..
 		"Limit: 1, Requires High Density Plating",
 		image = moduleImagePath .. "module_heavy_armor.png",
 		limit = 1,
 		cost = 400 * COST_MULT,
 		requireOneOf = {"module_heavy_armor"},
 		requireLevel = 12,
-		requireChassis = {"strike", "recon", "support"},
+		requireChassis = {"strike"},
 		slotType = "module",
 		applicationFunction = function (modules, sharedData)
 			sharedData.healthBonus = (sharedData.healthBonus or 0) + 5000*HP_MULT
+			sharedData.speedMultPost = (sharedData.speedMultPost or 1) + 0.02
 		end
 	},
 	{
 		name = "module_deep_plot_armor",
 		humanName = "Deep Plot Armor",
-		description = "Deep Plot Armor - Provides " .. 5000*HP_MULT .. " health while adding 2% total speed." ..
+		description = "Deep Plot Armor - Provides " .. 7000*HP_MULT .. " health while adding 3% total speed." ..
 		"Limit: 1, Requires Plot Armor",
 		image = moduleImagePath .. "module_heavy_armor.png",
 		limit = 1,
 		cost = 400 * COST_MULT,
 		requireOneOf = {"module_plot_armor"},
 		requireLevel = 15,
-		requireChassis = {"strike", "recon", "support"},
+		requireChassis = {"strike"},
 		slotType = "module",
 		applicationFunction = function (modules, sharedData)
-			sharedData.healthBonus = (sharedData.healthBonus or 0) + 5000*HP_MULT
-			sharedData.speedMultPost = (sharedData.speedMultPost or 1) + 0.02
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 7000*HP_MULT
+			sharedData.speedMultPost = (sharedData.speedMultPost or 1) + 0.03
+		end
+	},
+	{
+		name = "module_plot_armor",
+		humanName = "Plot Armor",
+		description = "Plot Armor - Provides " .. 2000*HP_MULT .. " health, 5 speed, 3s shorter jump cooldown, and +" .. 10*HP_MULT .. " hp/s." ..
+		"Limit: 1, Requires High Density Plating",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_heavy_armor"},
+		requireLevel = 12,
+		requireChassis = {"recon"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.speedMod = (sharedData.speedMod or 0) + 5
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 2000*HP_MULT
+			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 10*HP_MULT
+			sharedData.jumpReloadMod = (sharedData.jumpReloadMod or 0) - 3
+		end
+	},
+	{
+		name = "module_deep_plot_armor",
+		humanName = "Deep Plot Armor",
+		description = "Deep Plot Armor - Provides " .. 3500*HP_MULT .. " health, 5 speed, 3s shorter jump cooldown, and +" .. 20*HP_MULT .. " hp/s." ..
+		"Limit: 1, Requires Plot Armor",
+		image = moduleImagePath .. "module_heavy_armor.png",
+		limit = 1,
+		cost = 400 * COST_MULT,
+		requireOneOf = {"module_plot_armor"},
+		requireLevel = 15,
+		requireChassis = {"recon"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.speedMod = (sharedData.speedMod or 0) + 5
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 3500*HP_MULT
+			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 20*HP_MULT
+			sharedData.jumpReloadMod = (sharedData.jumpReloadMod or 0) - 3
 		end
 	},
 	{
@@ -1009,7 +1048,7 @@ moreModuleDefs = {
 		cost = 400 * COST_MULT,
 		requireOneOf = {"module_heavy_armor"},
 		requireLevel = 12,
-		requireChassis = {"assault", "knight"},
+		requireChassis = {"assault", "support", "knight"},
 		slotType = "module",
 		applicationFunction = function (modules, sharedData)
 			sharedData.healthBonus = (sharedData.healthBonus or 0) + 7000*HP_MULT
@@ -1025,10 +1064,38 @@ moreModuleDefs = {
 		cost = 400 * COST_MULT,
 		requireOneOf = {"module_plot_armor"},
 		requireLevel = 15,
-		requireChassis = {"assault", "knight"},
+		requireChassis = {"assault", "support", "knight"},
 		slotType = "module",
 		applicationFunction = function (modules, sharedData)
 			sharedData.healthBonus = (sharedData.healthBonus or 0) + 10000*HP_MULT
+		end
+	},
+	{
+		name = "module_higher_power_servos",
+		humanName = "Higher Power Servos",
+		description = "Higher Power Servos - Increases speed by 3.5. Limit: 5",
+		image = moduleImagePath .. "module_high_power_servos.png",
+		limit = 5,
+		cost = 200 * COST_MULT,
+		requireLevel = 12,
+		requireChassis = {"strike", "recon", "support", "assault", "knight"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.speedMod = (sharedData.speedMod or 0) + 3.5
+		end
+	},
+	{
+		name = "module_amazingly_ablative_armor",
+		humanName = "Amazingly Ablative Armour Plates",
+		description = "Amazingly Ablative Armour Plates - Provides " .. 600*HP_MULT .. " health. Limit: 5",
+		image = moduleImagePath .. "module_ablative_armor.png",
+		limit = 5,
+		cost = 150 * COST_MULT,
+		requireLevel = 12,
+		requireChassis = {"strike", "recon", "support", "assault", "knight"},
+		slotType = "module",
+		applicationFunction = function (modules, sharedData)
+			sharedData.healthBonus = (sharedData.healthBonus or 0) + 600*HP_MULT
 		end
 	}
 }
@@ -1203,7 +1270,8 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 			end
 		}
 
-		if i < 3 then
+		if i < 3 or i > 5 then
+			-- most levels offer two slots
 			res[i].upgradeSlots = {
 				{
 					defaultModule = moduleDefNames[commname].nullmodule,
@@ -1215,6 +1283,7 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 				},
 			}
 		else
+			-- certain key levels offer three slots
 			res[i].upgradeSlots = {
 				{
 					defaultModule = moduleDefNames[commname].nullmodule,
@@ -1271,7 +1340,8 @@ local chassisDefs = {
 			if level > 5 then
 				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 300 * (level-5)
-				sharedData.rangeMult = (sharedData.rangeMult or 1) + (1/30) * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.04 * (level-5)
 			end
 			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
 		end,
@@ -1305,7 +1375,7 @@ local chassisDefs = {
 				sharedData.speedMod = (sharedData.speedMod or 0) + 1 * (level-5)
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 150 * (level-5)
 				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
-				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.02 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
 			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
@@ -1344,7 +1414,8 @@ local chassisDefs = {
 			end
 			if level > 5 then
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 200 * (level-5)
-				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.04 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 2 * (level-5)
 			end
 			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
@@ -1385,8 +1456,8 @@ local chassisDefs = {
 			end
 			if level > 5 then
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 400 * (level-5)
-				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
-				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.02 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 3 * (level-5)
 			end
 			Spring.Echo("speedMod " .. (sharedData.speedMod or 0) .. " | healthBonus " .. (sharedData.healthBonus or 0) .. " | damageMult " .. (sharedData.damageMult or 1) .. " | rangeMult " .. (sharedData.rangeMult or 1))
@@ -1421,8 +1492,8 @@ local chassisDefs = {
 			end
 			if level > 5 then
 				sharedData.healthBonus = (sharedData.healthBonus or 0) + 300 * (level-5)
-				sharedData.damageMult = (sharedData.damageMult or 1) + 0.01 * (level-5)
-				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.01 * (level-5)
+				sharedData.rangeMult = (sharedData.rangeMult or 1) + 0.02 * (level-5)
+				sharedData.damageMult = (sharedData.damageMult or 1) + 0.02 * (level-5)
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 3 * (level-5)
 			end
 		end,
