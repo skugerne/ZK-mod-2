@@ -1253,7 +1253,7 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 		local modelNum = math.ceil(i/2)
 		if modelNum > 5 then
 			modelNum = 5           -- we have 5 models per comm, use them up to level 10
-		end                        -- sure would be nice to know how to scale an existing model!
+		end
 
 		res[i] = {
 			morphBuildPower = morphBuildPower(i),
@@ -1321,6 +1321,7 @@ local chassisDefs = {
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			-- the 'sharedData' parameter is sometimes (elsewhere) called 'moduleEffectData'
 			Spring.Echo("Apply level-up function to Strike lvl " .. level .. " -> " .. (level+1) .. ".")
 			if level < 2 then
 				sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
@@ -1360,6 +1361,7 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			-- the 'sharedData' parameter is sometimes (elsewhere) called 'moduleEffectData'
 			Spring.Echo("Apply level-up function to Recon lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 2 then
@@ -1395,6 +1397,7 @@ local chassisDefs = {
 		maxNormalLevel = maxCommLevel,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			-- the 'sharedData' parameter is sometimes (elsewhere) called 'moduleEffectData'
 			Spring.Echo("Apply level-up function to Engineer lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 1 then
@@ -1436,6 +1439,7 @@ local chassisDefs = {
 		secondPeashooter = false,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			-- the 'sharedData' parameter is sometimes (elsewhere) called 'moduleEffectData'
 			Spring.Echo("Apply level-up function to Guardian lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 2 then
@@ -1479,6 +1483,7 @@ local chassisDefs = {
 		secondPeashooter = true,
 		chassisApplicationFunction = function (level, modules, sharedData)
 			-- the 'level' parameter equals the previous level (i.e. one less than the level we are applying)
+			-- the 'sharedData' parameter is sometimes (elsewhere) called 'moduleEffectData'
 			Spring.Echo("Apply level-up function to Knight (comm) lvl " .. level .. " -> " .. (level+1) .. ".")
 			sharedData.autorepairRate = (sharedData.autorepairRate or 0) + 5
 			if level == 2 then

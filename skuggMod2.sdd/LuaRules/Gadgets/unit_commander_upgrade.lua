@@ -107,6 +107,7 @@ local function ApplyWeaponData(unitID, weapon1, weapon2, shield, rangeMult, dama
 	damageMult = damageMult or Spring.GetUnitRulesParam(unitID, "comm_damage_mult") or 1
 	Spring.SetUnitRulesParam(unitID, "comm_damage_mult", damageMult,  INLOS)
 	
+	-- here we are going to jump over into a Lua scope/context that is specific to the unit (or something like that)
 	local env = Spring.UnitScript.GetScriptEnv(unitID)
 	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateWeapons, weapon1, weapon2, shield, rangeMult, damageMult)
 end
@@ -208,6 +209,11 @@ local function ApplyModuleEffects(unitID, data, totalCost, images)
 	Spring.SetUnitRulesParam(unitID, "massOverride", effectiveMass, INLOS)
 	
 	ApplyWeaponData(unitID, data.weapon1, data.weapon2, data.shield, data.rangeMult, data.damageMult)
+
+	-- pipe the model and animation scaling info over to dynamicCommander.lua
+	-- we are going to jump over into a Lua scope/context that is specific to the unit (or something like that)
+	local env = Spring.UnitScript.GetScriptEnv(unitID)
+	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateModelScale, data.commLevel, data.modelScale)
 	
 	-- Do this all the time as it will be needed almost always.
 	GG.UpdateUnitAttributes(unitID)
@@ -321,6 +327,9 @@ local function InitializeDynamicCommander(unitID, level, chassis, totalCost, nam
 		local scale = 1 + (moduleEffectData.healthBonus-6000)/50000
 		Spring.Echo("Scale lvl ".. level .." comm to ".. scale .. "X.")
 		GG.UnitScale(unitID, scale)
+		moduleEffectData.modelScale = scale
+	else
+		moduleEffectData.modelScale = 1
 	end
 
 	ApplyModuleEffects(unitID, moduleEffectData, totalCost, images or {})
@@ -333,7 +342,9 @@ local function InitializeDynamicCommander(unitID, level, chassis, totalCost, nam
 end
 
 local function Upgrades_CreateUpgradedUnit(defName, x, y, z, face, unitTeam, isBeingBuilt, upgradeDef)
-	-- Calculate Module effects
+	-- create your new commander unit (to replace the old one you upgraded from)
+
+	-- calculate module effects, any free upgrades, and other properties associated with level upgrade
 	local moduleEffectData = GetModuleEffectsData(upgradeDef.moduleList, upgradeDef.level, upgradeDef.chassis)
 	
 	-- Create Unit, set appropriate global data first
@@ -366,8 +377,8 @@ local function Upgrades_CreateUpgradedUnit(defName, x, y, z, face, unitTeam, isB
 		unitCreatedWeaponNums[moduleEffectData.shield] = 3
 	end
 	
+	-- these go on a very important journey via gadget:UnitCreated() to InitializeDynamicCommander()
 	interallyCreatedUnit = true
-	
 	internalCreationUpgradeDef = upgradeDef
 	internalCreationModuleEffectData = moduleEffectData
 	

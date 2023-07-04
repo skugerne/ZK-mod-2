@@ -76,29 +76,35 @@ local function GetLevel()
 	if lvl2 == nil then
 		lvl2 = 'nil'
 	end
-	Spring.Echo("GetLevel: lvl1=" .. lvl1 .. "   lvl2=" .. lvl2 .. "   unitDefID=" .. unitDefID)
+	Spring.Echo("XXX GetLevel: lvl1=" .. lvl1 .. "   lvl2=" .. lvl2 .. "   unitDefID=" .. unitDefID .. "   unitID=" .. unitID)
 
 	return Spring.GetUnitRulesParam(unitID, "comm_level") or tonumber(ud.customParams.level) or 0
 end
 
-local function CalculatePaceMult()
-	paceMult = levelToPace[GetLevel()] or levelToPace[5]
-	return paceMult
+local function UpdateModelScale(chassisSize, modelScale)
+	Spring.Echo("XXX Would store scale info (" .. unitID .. ").")
 end
 
 -- called from commander unit defs (for example dynstrike.lua)
 local function GetPace()
+	if paceMult == nil then
+		Spring.Echo("XXX Calculate pace value (" .. unitID .. ").")
+		paceMult = levelToPace[GetLevel()] or levelToPace[5]
+	else
+		Spring.Echo("XXX Use cached pace value (" .. unitID .. ").")
+	end
 	return paceMult or CalculatePaceMult()
-end
-
-local function CalculateScaleMult()
-	scaleMult = levelScale[GetLevel()] or levelScale[5]
-	return scaleMult
 end
 
 -- called from commander unit defs (for example dynstrike.lua)
 local function GetScale()
-	return scaleMult or CalculateScaleMult()
+	if scaleMult == nil then
+		Spring.Echo("XXX Calculate scale value (" .. unitID .. ").")
+		scaleMult = levelScale[GetLevel()] or levelScale[5]
+	else
+		Spring.Echo("XXX Use cached scale value (" .. unitID .. ").")
+	end
+	return scaleMult
 end
 
 -- the parameter "num" refers to the index of the weapon in the list of possible weapons for the given commander type
@@ -434,6 +440,7 @@ return {
 	GetWeapon         = GetWeapon,
 	EmitWeaponFireSfx = EmitWeaponFireSfx,
 	EmitWeaponShotSfx = EmitWeaponShotSfx,
+	UpdateModelScale  = UpdateModelScale,
 	UpdateWeapons     = UpdateWeapons,
 	IsManualFire      = IsManualFire,
 	Create            = Create,
