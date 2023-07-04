@@ -49,6 +49,7 @@ local function IsManualFire(num)
 end
 
 -- this appears to scale animations in anticipation of larger models
+-- FIXME: this will need to be adjusted upwards to compensate for the hitpoint-based size scaling
 local levelScale = {
     [0] = 1,
     [1] = 1,
@@ -64,6 +65,19 @@ end
 
 local function GetLevel()
 	local ud = UnitDefs[unitDefID]
+
+	-- strangely, these two methods of learning the level often do not agree
+	-- they even disagree in different ways, sometimes one is higher, or the other, or the first is nil
+	local lvl1 = Spring.GetUnitRulesParam(unitID, "comm_level")
+	if lvl1 == nil then
+		lvl1 = 'nil'
+	end
+	local lvl2 = ud.customParams.level
+	if lvl2 == nil then
+		lvl2 = 'nil'
+	end
+	Spring.Echo("GetLevel: lvl1=" .. lvl1 .. "   lvl2=" .. lvl2 .. "   unitDefID=" .. unitDefID)
+
 	return Spring.GetUnitRulesParam(unitID, "comm_level") or tonumber(ud.customParams.level) or 0
 end
 
@@ -72,6 +86,7 @@ local function CalculatePaceMult()
 	return paceMult
 end
 
+-- called from commander unit defs (for example dynstrike.lua)
 local function GetPace()
 	return paceMult or CalculatePaceMult()
 end
@@ -81,6 +96,7 @@ local function CalculateScaleMult()
 	return scaleMult
 end
 
+-- called from commander unit defs (for example dynstrike.lua)
 local function GetScale()
 	return scaleMult or CalculateScaleMult()
 end
@@ -318,7 +334,7 @@ local function UpdateWeapons(weaponName1, weaponName2, shieldName, rangeMult, da
 	if weapon1 ~= 1 and weapon2 ~= 1 then
 		Spring.SetUnitWeaponState(unitID, 1, "range", maxRange)
 	end
-	for i = 2, 32 do
+	for i = 2, 32 do          -- the 32 appears to match the limit in dyncomm_chassis_generator.lua
 		if i ~= weapon1 and i ~= weapon2 then
 			Spring.SetUnitWeaponState(unitID, i, "range", 0)
 		end
