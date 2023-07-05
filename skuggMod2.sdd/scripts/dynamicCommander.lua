@@ -60,12 +60,13 @@ local levelScale = {
 }
 
 local function UpdateModelScale(chassisLevel, modelScale, speedMult)
+	-- the params 'modelScale' and 'speedMult' are 1.0 for a comm that is regular size and regular speed
 	Spring.Echo("Store scale info with unitID=" .. unitID .. " and chassisLevel=" .. chassisLevel .. " and modelScale=" .. modelScale .. " and speedMult=" .. speedMult)
 	scaleMult = ((levelScale[chassisLevel] or levelScale[5]) * modelScale) / speedMult
 	Spring.Echo("Animation rescale determined to be " .. scaleMult)
 end
 
--- called from commander unit defs (for example dynstrike.lua)
+-- called from commander unit scripts (for example dynstrike.lua)
 local function GetPace()
 	if scaleMult == nil then
 		Spring.Echo("Calling GetPace() before the scale is initialized.")
@@ -74,7 +75,7 @@ local function GetPace()
 	return 1 / scaleMult
 end
 
--- called from commander unit defs (for example dynstrike.lua)
+-- called from commander unit scripts (for example dynstrike.lua)
 local function GetScale()
 	if scaleMult == nil then
 		-- the engineer does this to position nanospray
