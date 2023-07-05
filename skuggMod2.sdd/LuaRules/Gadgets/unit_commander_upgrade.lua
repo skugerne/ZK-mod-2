@@ -113,7 +113,7 @@ local function ApplyWeaponData(unitID, weapon1, weapon2, shield, rangeMult, dama
 end
 
 local function ApplyModuleEffects(unitID, data, totalCost, images)
-	-- the 'datamodelScale' parameter is often elsewhere called 'moduleEffectData'
+	-- the 'data' parameter is often elsewhere called 'moduleEffectData'
 
 	local ud = UnitDefs[Spring.GetUnitDefID(unitID)]
 	local speedMult = 1
@@ -595,6 +595,7 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	local pAlreadyCount = params[3]
 	local pNewCount = params[4]
 
+	Spring.Echo("In Upgrades_GetValidAndMorphAttributes() have unitID " .. unitID)
 	Spring.Echo("In Upgrades_GetValidAndMorphAttributes() have level " .. (pLevel or "-"))
 	Spring.Echo("In Upgrades_GetValidAndMorphAttributes() have chassis " .. (pChassis or "-"))
 	
@@ -675,7 +676,10 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	local cost = 0
 	
 	-- FIXME: seems to be an error "Have 2 upgrade slots and 3 new modules."
-	Spring.Echo("Have " .. #levelDef.upgradeSlots .. " upgrade slots and " .. #pNewModules .. " new modules.")
+	if #levelDef.upgradeSlots ~= #pNewModules then
+		Spring.Echo("Have " .. #levelDef.upgradeSlots .. " upgrade slots and " .. #pNewModules .. " new modules.")
+	end
+
 	for i = 1, #pNewModules do
 		local moduleDefID = pNewModules[i]
 		if upgradeUtilities.ModuleIsValid(newLevelBounded, chassis, slotDefs[i].slotAllows, moduleDefID, modulesByDefID) then
