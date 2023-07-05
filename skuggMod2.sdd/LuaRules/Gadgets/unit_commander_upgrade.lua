@@ -113,13 +113,21 @@ local function ApplyWeaponData(unitID, weapon1, weapon2, shield, rangeMult, dama
 end
 
 local function ApplyModuleEffects(unitID, data, totalCost, images)
+	-- the 'datamodelScale' parameter is often elsewhere called 'moduleEffectData'
+
 	local ud = UnitDefs[Spring.GetUnitDefID(unitID)]
+	local speedMult = 1
 	
 	-- Update ApplyModuleEffectsFromUnitRulesParams if any non-unitRulesParams changes are made.
 	if data.speedMultPost or data.speedMod then
-		local speedMult = (data.speedMultPost or 1)*((data.speedMod or 0) + ud.speed)/ud.speed
+		speedMult = (data.speedMultPost or 1)*((data.speedMod or 0) + ud.speed)/ud.speed
 		Spring.SetUnitRulesParam(unitID, "upgradesSpeedMult", speedMult, INLOS)
 	end
+	
+	-- pipe the model and animation scaling info over to dynamicCommander.lua
+	-- we are going to jump over into a Lua scope/context that is specific to the unit (or something like that)
+	local env = Spring.UnitScript.GetScriptEnv(unitID)
+	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateModelScale, data.chassisLevel, data.modelScale, speedMult)
 	
 	if data.jumpReloadMod then
 		Spring.SetUnitRulesParam(unitID, "upgradesJumpReloadMod", data.jumpReloadMod, INLOS)
@@ -210,11 +218,6 @@ local function ApplyModuleEffects(unitID, data, totalCost, images)
 	
 	ApplyWeaponData(unitID, data.weapon1, data.weapon2, data.shield, data.rangeMult, data.damageMult)
 
-	-- pipe the model and animation scaling info over to dynamicCommander.lua
-	-- we are going to jump over into a Lua scope/context that is specific to the unit (or something like that)
-	local env = Spring.UnitScript.GetScriptEnv(unitID)
-	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateModelScale, data.commLevel, data.modelScale)
-	
 	-- Do this all the time as it will be needed almost always.
 	GG.UpdateUnitAttributes(unitID)
 end
@@ -270,6 +273,7 @@ local function GetModuleEffectsData(moduleList, level, chassis)
 	
 	if chassis then
 		chassisDefs[chassis].chassisApplicationFunction(level, moduleByDefID, moduleEffectData)
+		moduleEffectData.chassisLevel = chassisDefs[chassis].levelDefs[level].chassisLevel
 	else
 		-- is this something that can actually happen?
 		Spring.Log("GetModuleEffectsData", LOG.WARNING, "Chassis evaluates to false.")
@@ -590,6 +594,9 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	local pChassis = params[2]
 	local pAlreadyCount = params[3]
 	local pNewCount = params[4]
+
+	Spring.Echo("In Upgrades_GetValidAndMorphAttributes() have level " .. (pLevel or "-"))
+	Spring.Echo("In Upgrades_GetValidAndMorphAttributes() have chassis " .. (pChassis or "-"))
 	
 	if #params ~= 4 + pAlreadyCount + pNewCount then
 		return false
@@ -599,15 +606,16 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 		return false
 	end
 	
-	-- Make sure level and chassis match.
+	-- Make sure level and chassis match with values from alternate sources.
 	local level = Spring.GetUnitRulesParam(unitID, "comm_level")
 	local chassis = Spring.GetUnitRulesParam(unitID, "comm_chassis")
 	if level ~= pLevel or chassis ~= pChassis then
+		Spring.Log("Upgrades_GetValidAndMorphAttributes", LOG.WARNING, "Disagreement between level and/or chassis numbers.")
 		return false
 	end
 	
 	local newLevel = level + 1
-	local newLevelBounded = math.min(chassisDefs[chassis].maxNormalLevel, level + 1)
+	local newLevelBounded = math.min(chassisDefs[chassis].maxNormalLevel, newLevel)
 	
 	-- If unbounded level is disallowed then the comm might be invalid
 	if LEVEL_BOUND and newLevel > LEVEL_BOUND then
@@ -662,10 +670,12 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	local modulesByDefID = upgradeUtilities.ModuleListToByDefID(fullModuleList)
 	
 	-- Determine Cost and check that the new modules are valid.
-	local levelDefs = chassisDefs[chassis].levelDefs[newLevelBounded]
-	local slotDefs = levelDefs.upgradeSlots
+	local levelDef = chassisDefs[chassis].levelDefs[newLevelBounded]
+	local slotDefs = levelDef.upgradeSlots
 	local cost = 0
 	
+	-- FIXME: seems to be an error "Have 2 upgrade slots and 3 new modules."
+	Spring.Echo("Have " .. #levelDef.upgradeSlots .. " upgrade slots and " .. #pNewModules .. " new modules.")
 	for i = 1, #pNewModules do
 		local moduleDefID = pNewModules[i]
 		if upgradeUtilities.ModuleIsValid(newLevelBounded, chassis, slotDefs[i].slotAllows, moduleDefID, modulesByDefID) then
@@ -694,11 +704,11 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	if newLevel ~= newLevelBounded then
 		cost = cost + chassisDefs[chassis].extraLevelCostFunction(newLevel)
 	else
-		cost = cost + levelDefs.morphBaseCost
+		cost = cost + levelDef.morphBaseCost
 	end
-	local targetUnitDefID = levelDefs.morphUnitDefFunction(modulesByDefID)
+	local targetUnitDefID = levelDef.morphUnitDefFunction(modulesByDefID)
 	
-	local morphTime = cost/levelDefs.morphBuildPower
+	local morphTime = cost/levelDef.morphBuildPower    -- TODO: record this stuff
 	local increment = (1 / (30 * morphTime))
 	
 	local morphDef = {

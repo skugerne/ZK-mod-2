@@ -1240,6 +1240,7 @@ local maxCommLevel = 20      -- not really max, but the point there are no more 
 local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponSlot)
 	local res = {
 		[0] = {
+			chassisLevel = 0,
 			morphBuildPower = morphBuildPower(0),
 			morphBaseCost = 0,
 			morphUnitDefFunction = function(modulesByDefID)
@@ -1256,6 +1257,7 @@ local function levelDefGenerator(commname, cloneModulesStringFunc, secondWeaponS
 		end
 
 		res[i] = {
+			chassisLevel = modelNum,
 			morphBuildPower = morphBuildPower(i),
 			morphBaseCost = morphCost(i),
 			morphUnitDefFunction = function(modulesByDefID)

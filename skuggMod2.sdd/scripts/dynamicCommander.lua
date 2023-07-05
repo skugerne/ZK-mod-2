@@ -8,8 +8,7 @@ local weapon2
 local shield
 local weaponNumMap = {}
 local weaponsInitialized = false
-local paceMult
-local scaleMult
+local scaleMult = nil
 local weaponCegs = {}
 
 local commWreckUnitRulesParam = {"comm_baseWreckID", "comm_baseHeapID"}
@@ -49,7 +48,8 @@ local function IsManualFire(num)
 end
 
 -- this appears to scale animations in anticipation of larger models
--- FIXME: this will need to be adjusted upwards to compensate for the hitpoint-based size scaling
+-- unclear why this should be the same for different comm types, perhaps indended as an approximation
+-- in any case, we'll need to build on this to accomidate hitpoints-based size scaling, and module effects
 local levelScale = {
     [0] = 1,
     [1] = 1,
@@ -58,51 +58,27 @@ local levelScale = {
     [4] = 1.25,
     [5] = 1.3,
 }
-local levelToPace = {}
-for key, value in pairs(levelScale) do
-	levelToPace[key] = 1/value
-end
 
-local function GetLevel()
-	local ud = UnitDefs[unitDefID]
-
-	-- strangely, these two methods of learning the level often do not agree
-	-- they even disagree in different ways, sometimes one is higher, or the other, or the first is nil
-	local lvl1 = Spring.GetUnitRulesParam(unitID, "comm_level")
-	if lvl1 == nil then
-		lvl1 = 'nil'
-	end
-	local lvl2 = ud.customParams.level
-	if lvl2 == nil then
-		lvl2 = 'nil'
-	end
-	Spring.Echo("XXX GetLevel: lvl1=" .. lvl1 .. "   lvl2=" .. lvl2 .. "   unitDefID=" .. unitDefID .. "   unitID=" .. unitID)
-
-	return Spring.GetUnitRulesParam(unitID, "comm_level") or tonumber(ud.customParams.level) or 0
-end
-
-local function UpdateModelScale(chassisSize, modelScale)
-	Spring.Echo("XXX Would store scale info (" .. unitID .. ").")
+local function UpdateModelScale(chassisLevel, modelScale, speedMult)
+	Spring.Echo("Store scale info with unitID=" .. unitID .. " and chassisLevel=" .. (chassisLevel or "-"))
+	scaleMult = ((levelScale[chassisLevel] or levelScale[5]) * modelScale) / speedMult
+	Spring.Echo("Animation rescale determined to be " .. scaleMult)
 end
 
 -- called from commander unit defs (for example dynstrike.lua)
 local function GetPace()
-	if paceMult == nil then
-		Spring.Echo("XXX Calculate pace value (" .. unitID .. ").")
-		paceMult = levelToPace[GetLevel()] or levelToPace[5]
-	else
-		Spring.Echo("XXX Use cached pace value (" .. unitID .. ").")
+	if scaleMult == nil then
+		Spring.Echo("Calling GetPace() before the scale is initialized.")
+		return 1
 	end
-	return paceMult or CalculatePaceMult()
+	return 1 / scaleMult
 end
 
 -- called from commander unit defs (for example dynstrike.lua)
 local function GetScale()
 	if scaleMult == nil then
-		Spring.Echo("XXX Calculate scale value (" .. unitID .. ").")
-		scaleMult = levelScale[GetLevel()] or levelScale[5]
-	else
-		Spring.Echo("XXX Use cached scale value (" .. unitID .. ").")
+		Spring.Echo("Calling GetScale() before the scale is initialized.")   -- FIXME: this is happening sometimes
+		return 1
 	end
 	return scaleMult
 end
