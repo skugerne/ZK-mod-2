@@ -298,23 +298,16 @@ end
 
 
 local function MotionSpeedControl()
-	REF_SPEED = GetUnitValue(COB.MAX_SPEED)
 	Sleep(33)
 	while true do
 
-		local sizeSpeedMult = math.max(0.05, dyncomm.GetPace())
-		animationSpeedMult = GetUnitValue(COB.CURRENT_SPEED) * sizeSpeedMult / REF_SPEED
+		animationSpeedMult = math.max(0.05, dyncomm.GetPace())
 		
 		walkTurnSpeed1 = REF_TURN_SPEED * animationSpeedMult * SPEEDUP_FACTOR
 		walkAngleMult = animationSpeedMult
-
 		if (walkAngleMult > 1.2) then
-			-- this can happen for fast comms, but not slow ones
-			--Spring.Echo("Engineer bounding above: walkAngleMult=" .. walkAngleMult)
 			walkAngleMult = 1.2
 		elseif (walkAngleMult < 0.9) then
-			-- this happens a lot for slow comms
-			--Spring.Echo("Engineer bounding below: walkAngleMult=" .. walkAngleMult)
 			walkAngleMult = 0.9
 		end
 
