@@ -77,7 +77,9 @@ end
 -- called from commander unit defs (for example dynstrike.lua)
 local function GetScale()
 	if scaleMult == nil then
-		Spring.Echo("Calling GetScale() before the scale is initialized.")   -- FIXME: this is happening sometimes
+		-- the engineer does this to position nanospray
+		-- probably OK (hitpoint and module scaling for engineer are perhaps not a lot)
+		Spring.Echo("Calling GetScale() before the scale is initialized.")
 		return 1
 	end
 	return scaleMult

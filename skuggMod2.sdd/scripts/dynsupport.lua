@@ -308,12 +308,15 @@ local function MotionSpeedControl()
 		walkTurnSpeed1 = REF_TURN_SPEED * animationSpeedMult * SPEEDUP_FACTOR
 		walkAngleMult = animationSpeedMult
 
-		-- unclear if these limits have a purpose we should be respecting
-		--if (walkAngleMult > 1.2) then
-		--	walkAngleMult = 1.2
-		--elseif (walkAngleMult < 0.9) then
-		--	walkAngleMult = 0.9
-		--end
+		if (walkAngleMult > 1.2) then
+			-- this can happen for fast comms, but not slow ones
+			--Spring.Echo("Engineer bounding above: walkAngleMult=" .. walkAngleMult)
+			walkAngleMult = 1.2
+		elseif (walkAngleMult < 0.9) then
+			-- this happens a lot for slow comms
+			--Spring.Echo("Engineer bounding below: walkAngleMult=" .. walkAngleMult)
+			walkAngleMult = 0.9
+		end
 
 		walkSleepMult = 0.7 * walkAngleMult/(animationSpeedMult * SPEEDUP_FACTOR)
 
