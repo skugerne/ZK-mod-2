@@ -62,7 +62,6 @@ local walkSleepMult = 1.0
 local walkAngleMult = 1.0
 local animationSpeedMult = 1.0
 local REF_SPEED = 1
-local sizeSpeedMult = 1.0
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -303,19 +302,18 @@ local function MotionSpeedControl()
 	Sleep(33)
 	while true do
 
-		sizeSpeedMult = dyncomm.GetPace()
+		local sizeSpeedMult = math.max(0.05, dyncomm.GetPace())
 		animationSpeedMult = GetUnitValue(COB.CURRENT_SPEED) * sizeSpeedMult / REF_SPEED
 		
-		if (animationSpeedMult < 0.7) then
-			animationSpeedMult = 0.7
-		end
 		walkTurnSpeed1 = REF_TURN_SPEED * animationSpeedMult * SPEEDUP_FACTOR
 		walkAngleMult = animationSpeedMult
-		if (walkAngleMult > 1.2) then
-			walkAngleMult = 1.2
-		elseif (walkAngleMult < 0.9) then
-			walkAngleMult = 0.9
-		end
+
+		-- unclear if these limits have a purpose we should be respecting
+		--if (walkAngleMult > 1.2) then
+		--	walkAngleMult = 1.2
+		--elseif (walkAngleMult < 0.9) then
+		--	walkAngleMult = 0.9
+		--end
 
 		walkSleepMult = 0.7 * walkAngleMult/(animationSpeedMult * SPEEDUP_FACTOR)
 

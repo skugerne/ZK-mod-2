@@ -60,7 +60,7 @@ local levelScale = {
 }
 
 local function UpdateModelScale(chassisLevel, modelScale, speedMult)
-	Spring.Echo("Store scale info with unitID=" .. unitID .. " and chassisLevel=" .. (chassisLevel or "-"))
+	Spring.Echo("Store scale info with unitID=" .. unitID .. " and chassisLevel=" .. chassisLevel .. " and modelScale=" .. modelScale .. " and speedMult=" .. speedMult)
 	scaleMult = ((levelScale[chassisLevel] or levelScale[5]) * modelScale) / speedMult
 	Spring.Echo("Animation rescale determined to be " .. scaleMult)
 end
