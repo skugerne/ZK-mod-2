@@ -711,8 +711,13 @@ local function Upgrades_GetValidAndMorphAttributes(unitID, params)
 	end
 	local targetUnitDefID = levelDef.morphUnitDefFunction(modulesByDefID)
 	
-	local morphTime = cost/levelDef.morphBuildPower    -- TODO: record this stuff
+	local morphTime = cost/levelDef.morphBuildPower
 	local increment = (1 / (30 * morphTime))
+
+	Spring.Echo(
+		"costs for comm " .. Spring.GetUnitRulesParam(unitID, "comm_name") ..
+		" level " .. level .. "->" .. newLevel .. " = " .. cost .. " + " .. Spring.Utilities.GetUnitCost(unitID)
+	)
 	
 	local morphDef = {
 		upgradeDef = {
