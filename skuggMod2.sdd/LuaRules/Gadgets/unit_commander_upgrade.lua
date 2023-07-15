@@ -116,18 +116,17 @@ local function ApplyModuleEffects(unitID, data, totalCost, images)
 	-- the 'data' parameter is often elsewhere called 'moduleEffectData'
 
 	local ud = UnitDefs[Spring.GetUnitDefID(unitID)]
-	local speedMult = 1
 	
 	-- Update ApplyModuleEffectsFromUnitRulesParams if any non-unitRulesParams changes are made.
 	if data.speedMultPost or data.speedMod then
-		speedMult = (data.speedMultPost or 1)*((data.speedMod or 0) + ud.speed)/ud.speed
+		local speedMult = (data.speedMultPost or 1)*((data.speedMod or 0) + ud.speed)/ud.speed
 		Spring.SetUnitRulesParam(unitID, "upgradesSpeedMult", speedMult, INLOS)
 	end
 	
 	-- pipe the model and animation scaling info over to dynamicCommander.lua
 	-- we are going to jump over into a Lua scope/context that is specific to the unit (or something like that)
 	local env = Spring.UnitScript.GetScriptEnv(unitID)
-	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateModelScale, data.chassisLevel, data.modelScale, speedMult)
+	Spring.UnitScript.CallAsUnit(unitID, env.dyncomm.UpdateModelScale, data.chassisLevel, data.modelScale)
 	
 	if data.jumpReloadMod then
 		Spring.SetUnitRulesParam(unitID, "upgradesJumpReloadMod", data.jumpReloadMod, INLOS)
