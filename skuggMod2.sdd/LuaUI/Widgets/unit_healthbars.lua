@@ -1344,15 +1344,26 @@ function MorphUpdate(morphTable)
 end
 
 function MorphStart(unitID, morphDef)
-	--return false
+	if WG['CommInvestMorphStart'] then
+		WG.CommInvestMorphStart(unitID, morphDef)
+	end
 end
 
 function MorphStop(unitID)
+	-- the unit morph was cancelled (by command, or by death)
 	UnitMorphs[unitID] = nil
+	if WG['CommInvestMorphStop'] then
+		WG.CommInvestMorphStop(unitID, nil)
+	end
 end
 
-function MorphFinished(unitID)
-	UnitMorphs[unitID] = nil
+function MorphFinished(oldUnitID, newUnitId)
+	-- the morph got done
+	-- has only one parameter in ZK, but is sent both params shown here
+	UnitMorphs[oldUnitID] = nil
+	if WG['CommInvestMorphStop'] then
+		WG.CommInvestMorphStop(oldUnitID, newUnitId)
+	end
 end
 
 --------------------------------------------------------------------------------
