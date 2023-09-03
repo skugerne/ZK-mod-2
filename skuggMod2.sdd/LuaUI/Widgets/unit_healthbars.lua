@@ -1341,28 +1341,39 @@ end --//end do
 
 function MorphUpdate(morphTable)
 	UnitMorphs = morphTable
+	Spring.Echo("Got a call to unit_healthbars.lua MorphUpdate().")
 end
 
 function MorphStart(unitID, morphDef)
+	-- the unit morph is started
+	-- is only called if the unit can be seen
 	if WG['CommInvestMorphStart'] then
 		WG.CommInvestMorphStart(unitID, morphDef)
+	else
+		Spring.Echo("CommInvestMorphStart not defined.")
 	end
 end
 
 function MorphStop(unitID)
 	-- the unit morph was cancelled (by command, or by death)
+	-- is only called if the unit can be seen
 	UnitMorphs[unitID] = nil
 	if WG['CommInvestMorphStop'] then
 		WG.CommInvestMorphStop(unitID, nil)
+	else
+		Spring.Echo("CommInvestMorphStop not defined.")
 	end
 end
 
 function MorphFinished(oldUnitID, newUnitId)
 	-- the morph got done
 	-- has only one parameter in ZK, but is sent both params shown here
+	-- is only called if the unit can be seen
 	UnitMorphs[oldUnitID] = nil
 	if WG['CommInvestMorphStop'] then
 		WG.CommInvestMorphStop(oldUnitID, newUnitId)
+	else
+		Spring.Echo("CommInvestMorphStop not defined.")
 	end
 end
 

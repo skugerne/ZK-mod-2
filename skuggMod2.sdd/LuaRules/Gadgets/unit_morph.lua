@@ -234,6 +234,8 @@ local function GetMorphRate(unitID)
 end
 
 local function StartMorph(unitID, unitDefID, teamID, morphDef)
+	Spring.Echo("Got a call to synced unit_morph.lua StartMorph().")
+
 	-- do not allow morph for unfinsihed units
 	if not isFinished(unitID) then
 		return false
@@ -973,6 +975,7 @@ local function SelectSwap(cmd, oldID, newID)
 end
 
 local function StartMorph(cmd, unitID, unitDefID, morphID)
+	Spring.Echo("Got a call to unsynced unit_morph.lua StartMorph().")
 	if (Script.LuaUI('MorphStart')) then
 		if useLuaUI then
 			local readTeam
@@ -989,6 +992,8 @@ local function StartMorph(cmd, unitID, unitDefID, morphID)
 					end
 				end
 			)
+		else
+			Spring.Echo("The useLuaUI var is false-ey.")    -- this is happening on the first upgrade start
 		end
 	end
 	return true
@@ -1038,7 +1043,7 @@ function gadget:Update()
 		morphUnitsSynced = SYNCED.morphUnits
 		if next(morphUnitsSynced) then
 			local useLuaUI_ = Script.LuaUI('MorphUpdate')
-			if useLuaUI_ ~= useLuaUI then --//Update Callins on change
+			if useLuaUI_ ~= useLuaUI then --//Update Callins on change             eh ??
 				drawProgress = not Script.LuaUI('MorphDrawProgress')
 				useLuaUI     = useLuaUI_
 			end
