@@ -306,12 +306,10 @@ local function StopMorph(unitID, morphData)
 	local unitDefID = Spring.GetUnitDefID(unitID)
 
 	Spring.SetUnitResourcing(unitID,"e", UnitDefs[unitDefID].energyMake)
-	local usedMetal	= morphData.def.metal * scale
-	Spring.AddUnitResource(unitID, 'metal', usedMetal)    -- refund some metal (apparently also when destroyed)
-	--local usedEnergy = morphData.def.energy * scale
-	--Spring.AddUnitResource(unitID, 'energy', usedEnergy)
+	local refundMetal	= morphData.def.metal * scale
+	Spring.AddUnitResource(unitID, 'metal', refundMetal)    -- refund some metal (apparently also when destroyed)
 
-	SendToUnsynced("unit_morph_stop", unitID)
+	SendToUnsynced("unit_morph_stop", unitID, refundMetal)
 
 	if morphData.def.cmd then
 		local cmdDescID = Spring.FindUnitCmdDesc(unitID, morphData.def.stopCmd)
@@ -942,6 +940,27 @@ local morphUnitsSynced = {}
 
 --//synced -> unsynced actions
 
+local function IsComm(unitID)
+	local unitDefID = Spring.GetUnitDefID(unitID)
+	local unitdef = UnitDefs[unitDefID]
+	--Spring.Echo("Check unitID " .. unitID)
+	--if unitdef then
+	--	if unitdef.customParams then
+	--		if unitdef.customParams.dynamic_comm then
+	--			return true
+	--		else
+	--			Spring.Echo("Not all comm C.")
+	--		end
+	--	else
+	--		Spring.Echo("Not all comm B.")
+	--	end
+	--else
+	--	Spring.Echo("Not all comm A.")
+	--end
+	--return false
+	return (unitdef and unitdef.customParams and unitdef.customParams.dynamic_comm)
+end
+
 local function SelectSwap(cmd, oldID, newID)
 	local selUnits = Spring.GetSelectedUnits()
 	for i = 1, #selUnits do
@@ -971,6 +990,17 @@ local function SelectSwap(cmd, oldID, newID)
 			)
 		end
 	end
+
+	if (Script.LuaUI('CommInvestMorphFinished')) then
+		if IsComm(oldID) then
+			Script.LuaUI.CommInvestMorphFinished(oldID,newID)
+		else
+			Spring.Echo("Not a comm.")
+		end
+	else
+		Spring.Echo("Not registered.")
+	end
+
 	return true
 end
 
@@ -993,13 +1023,25 @@ local function StartMorph(cmd, unitID, unitDefID, morphID)
 				end
 			)
 		else
-			Spring.Echo("The useLuaUI var is false-ey.")    -- this is happening on the first upgrade start
+			-- the first morph start for your comm will end up here, but the call isn't used for anything anyway
+			Spring.Echo("The useLuaUI var is false-ey.")
 		end
 	end
+
+	if (Script.LuaUI('CommInvestMorphStart')) then
+		if IsComm(unitID) then
+			Script.LuaUI.CommInvestMorphStart(unitID)
+		else
+			Spring.Echo("Not a comm.")
+		end
+	else
+		Spring.Echo("Not registered.")
+	end
+
 	return true
 end
 
-local function StopMorph(cmd, unitID)
+local function StopMorph(cmd, unitID, refundMetal)
 	if (Script.LuaUI('MorphStop')) then
 		if useLuaUI then
 			local readTeam
@@ -1018,6 +1060,17 @@ local function StopMorph(cmd, unitID)
 			)
 		end
 	end
+
+	if (Script.LuaUI('CommInvestMorphStop')) then
+		if IsComm(unitID) then
+			Script.LuaUI.CommInvestMorphStop(unitID, refundMetal)
+		else
+			Spring.Echo("Not a comm.")
+		end
+	else
+		Spring.Echo("Not registered.")
+	end
+
 	return true
 end
 
@@ -1043,7 +1096,9 @@ function gadget:Update()
 		morphUnitsSynced = SYNCED.morphUnits
 		if next(morphUnitsSynced) then
 			local useLuaUI_ = Script.LuaUI('MorphUpdate')
-			if useLuaUI_ ~= useLuaUI then --//Update Callins on change             eh ??
+			if useLuaUI_ ~= useLuaUI then
+				-- unclear why we need to toggle this useLuaUI like this
+				-- seems like the checks for functions being registered would be enough
 				drawProgress = not Script.LuaUI('MorphDrawProgress')
 				useLuaUI     = useLuaUI_
 			end
@@ -1067,6 +1122,16 @@ function gadget:Update()
 					end
 				)
 				Script.LuaUI.MorphUpdate(morphTable)
+			end
+
+			if Script.LuaUI('CommInvestMorphUpdate') then
+				local morphTable = {}
+				for unitID, morphData in pairs(morphUnitsSynced) do
+					if IsComm(unitID) then
+						morphTable[unitID] = {progress = morphData.progress, into = morphData.def.into}
+					end
+				end
+				Script.LuaUI.CommInvestMorphUpdate(morphTable)
 			end
 		end
 	end
