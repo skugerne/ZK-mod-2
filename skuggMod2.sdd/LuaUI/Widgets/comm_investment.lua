@@ -46,9 +46,9 @@ function CreateWindow()
 		y = "30%",
 		height = 60,
 		clientWidth  = 400,
-		clientHeight = 65,
-		minHeight = 65,
-		maxHeight = 65,
+		clientHeight = 60,
+		minHeight = 60,
+		maxHeight = 200,
 		minWidth = 250,
 		draggable = true,
 		resizable = true,
@@ -59,30 +59,59 @@ function CreateWindow()
 end
 
 -- new dyn comms are created after upgrades
+-- mostly we don't care, but we will perform the original initialization of our list from this event
+-- (NOTE: this does not capture comms on other teams)
 function widget:UnitCreated(unitID, unitDefID, unitTeam)
-    Spring.Echo("comm widget sees unitId " .. unitID .. " is created")
---    if localTeamID == unitTeam and UnitDefs then
---        local unitDef = UnitDefs[unitDefID]
---        if unitDef and unitDef.customParams and unitDef.customParams.dynamic_comm then
---            Spring.Echo("comm widget: new unit is a dyn comm with the right team")
---            trackedComms[unitID] = true
---        end
---    end
+
+    -- only pay attention to unit creation at the startup or we can capture comm upgrades
+    if totalFrame > 0 then
+        return
+    end
+
+    local unitdef = UnitDefs[unitDefID]
+    if unitdef and unitdef.customParams and unitdef.customParams.dynamic_comm then
+        if trackedComms[unitID] == nil then
+            trackedCommsLength = trackedCommsLength + 1
+            Spring.Echo("Initialize a dyncomm, unitID " .. unitID)
+            trackedComms[unitID] = {invested_metal = 0, invested_time = 0, index = trackedCommsLength}
+            local y = 10 + (15 * (trackedCommsLength - 1))
+            trackedComms[unitID].labels = {
+                labelUnitID = Label:New {
+                    parent = windowMain,
+                    x = (windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
+                    y = y,
+                    fontSize = 14,
+                    textColor = white,
+                    caption = '---',
+                },
+                labelTotalCost = Label:New {
+                    parent = windowMain,
+                    x = (windowMain.width / 2) - (font:GetTextWidth('---', 20) / 2),
+                    y = y,
+                    fontSize = 14,
+                    textColor = grey,
+                    caption = '---',
+                },
+                labelTotalTime = Label:New {
+                    parent = windowMain,
+                    x = (3 * windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
+                    y = y,
+                    fontSize = 14,
+                    textColor = grey,
+                    caption = '---',
+                }
+            }
+        end
+    end
 end
 
 -- old dyn comms are destroyed after upgrade
+-- mostly we don't care, but we will mark comms as dead in case if wasn't just an upgrade
 function widget:UnitDestroyed(unitID, unitDefID, unitTeam)
-    Spring.Echo("comm widget sees unitId " .. unitID .. " was destroyed")
     if trackedComms[unitID] then
+        Spring.Echo("A dyncomm is dead, unitID " .. unitID)
         trackedComms[unitID]['unit_destroyed'] = true
     end
---   if localTeamID == unitTeam and UnitDefs then
---       local unitDef = UnitDefs[unitDefID]
---       if unitDef and unitDef.customParams and unitDef.customParams.dynamic_comm then
---           Spring.Echo("comm widget: dead unit was a dyn comm with the right team")
---           trackedComms[unitID] = nil
---       end
---   end
 end
 
 function widget:GameFrame(n)
@@ -134,85 +163,66 @@ function widget:Shutdown()
 	if windowMain then windowMain:Dispose() end
 end
 
--- changing teams, rejoin, becoming spec etc
---function widget:PlayerChanged (playerID)
---    if spGetSpectatingState() then
---        widgetHandler:RemoveWidget()
---    end
---    localTeamID = Spring.GetLocalTeamID ()
---end
-
 function CommInvestMorphUpdate(morphTable)
-	Spring.Echo("Got a call to CommInvestMorphUpdate.")
+    Spring.Echo("Got a call to CommInvestMorphUpdate.")
     for unitID, morphData in pairs(morphTable) do
         Spring.Echo("Have progress " .. morphData.progress .. " for unitID " .. unitID .. ".")
         if trackedComms[unitID] == nil then
             Spring.Echo("FROWN: An unknown upgrade is in progress.")
         else
             trackedComms[unitID].progess = morphData.progress
-            trackedComms[unitID].invested_time = trackedComms[unitID].invested_time +  totalFrame - trackedComms[unitID].upgrade_started
-            trackedComms[unitID].upgrade_started = totalFrame
+            trackedComms[unitID].invested_time = trackedComms[unitID].invested_time +  totalFrame - trackedComms[unitID].upgradeStarted
+            trackedComms[unitID].upgradeStarted = totalFrame
             trackedComms[unitID].invested_metal = trackedComms[unitID].invested_metal + 0
+            Spring.Echo("The morphDef:")
+            for k, v in pairs(morphData.morphDef) do
+                if type(v) == 'table' then
+                    Spring.Echo("  -- " .. k)
+                    for k2, v2 in pairs(v) do
+                        if type(v2) == 'table' then
+                            Spring.Echo("    -- " .. k2)
+                            for k3, v3 in pairs(v2) do
+                                Spring.Echo("      -- " .. k3 .. " = " .. tostring(v3))
+                            end
+                        else
+                            Spring.Echo("    -- " .. k2 .. " = " .. tostring(v2))
+                        end
+                    end
+                else
+                    Spring.Echo("  -- " .. k .. " = " .. tostring(v))
+                end
+            end
         end
     end
 end
 
 function CommInvestMorphStart(unitID)
-	Spring.Echo("Got a call to CommInvestMorphStart, unitID=" .. unitID .. ".")
+    Spring.Echo("Got a call to CommInvestMorphStart, unitID=" .. unitID .. ".")
     if trackedComms[unitID] == nil then
-        Spring.Echo("There are currently " .. trackedCommsLength .. " elements in our comm tracking list.")
-        trackedCommsLength = trackedCommsLength + 1
-        local y = 15 + (10 * (trackedCommsLength - 1))
-        trackedComms[unitID] = {upgrade_started = totalFrame, invested_metal = 0, invested_time = 0}
-        trackedComms[unitID].labels = {
-            labelUnitID = Label:New {
-                parent = windowMain,
-                x = (windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
-                y = y,
-                fontSize = 20,
-                textColor = white,
-                caption = '---',
-            },
-            labelTotalCost = Label:New {
-                parent = windowMain,
-                x = (windowMain.width / 2) - (font:GetTextWidth('---', 20) / 2),
-                y = y,
-                fontSize = 20,
-                textColor = grey,
-                caption = '---',
-            },
-            labelTotalTime = Label:New {
-                parent = windowMain,
-                x = (3 * windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
-                y = y,
-                fontSize = 20,
-                textColor = grey,
-                caption = '---',
-            }
-        }
+        Spring.Echo("FROWN: Got a start for an un-initialized comm.")
     else
-        if trackedComms[unitID].upgrade_started then
+        if trackedComms[unitID].upgradeStarted then
             Spring.Echo("FROWN: An upgrade is started on top of another upgrade.")
         else
-            trackedComms[unitID].upgrade_started = totalFrame
+            trackedComms[unitID].upgradeStarted = totalFrame
         end
     end
 end
 
 function CommInvestMorphStop(unitID, refundMetal)
-	Spring.Echo("Got a call to CommInvestMorphStop, unitID=" .. unitID .. ", refundMetal=" .. refundMetal .. ".")
+    Spring.Echo("Got a call to CommInvestMorphStop, unitID=" .. unitID .. ", refundMetal=" .. refundMetal .. ".")
     if trackedComms[unitID] == nil then
         Spring.Echo("FROWN: An unknown upgrade has been stopped.")
     else
-        trackedComms[unitID].invested_time = trackedComms[unitID].invested_time + totalFrame - trackedComms[unitID].upgrade_started
-        trackedComms[unitID].upgrade_started = nil
+        trackedComms[unitID].invested_time = trackedComms[unitID].invested_time + totalFrame - trackedComms[unitID].upgradeStarted
+        trackedComms[unitID].upgradeStarted = nil
         trackedComms[unitID].progess = nil
         trackedComms[unitID].invested_metal = trackedComms[unitID].invested_metal - refundMetal
     end
 end
 
 function CommInvestMorphFinished(oldUnitID, newUnitID)
-	Spring.Echo("Got a call to CommInvestMorphStop, oldUnitID=" .. oldUnitID .. ", newUnitID=" .. newUnitID .. ".")
+    Spring.Echo("Got a call to CommInvestMorphFinished, oldUnitID=" .. oldUnitID .. ", newUnitID=" .. newUnitID .. ".")
     CommInvestMorphStop(oldUnitID, 0)
     if trackedComms[newUnitID] == nil then
         trackedComms[newUnitID] = trackedComms[oldUnitID]

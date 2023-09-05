@@ -943,21 +943,6 @@ local morphUnitsSynced = {}
 local function IsComm(unitID)
 	local unitDefID = Spring.GetUnitDefID(unitID)
 	local unitdef = UnitDefs[unitDefID]
-	--Spring.Echo("Check unitID " .. unitID)
-	--if unitdef then
-	--	if unitdef.customParams then
-	--		if unitdef.customParams.dynamic_comm then
-	--			return true
-	--		else
-	--			Spring.Echo("Not all comm C.")
-	--		end
-	--	else
-	--		Spring.Echo("Not all comm B.")
-	--	end
-	--else
-	--	Spring.Echo("Not all comm A.")
-	--end
-	--return false
 	return (unitdef and unitdef.customParams and unitdef.customParams.dynamic_comm)
 end
 
@@ -994,11 +979,7 @@ local function SelectSwap(cmd, oldID, newID)
 	if (Script.LuaUI('CommInvestMorphFinished')) then
 		if IsComm(oldID) then
 			Script.LuaUI.CommInvestMorphFinished(oldID,newID)
-		else
-			Spring.Echo("Not a comm.")
 		end
-	else
-		Spring.Echo("Not registered.")
 	end
 
 	return true
@@ -1031,11 +1012,7 @@ local function StartMorph(cmd, unitID, unitDefID, morphID)
 	if (Script.LuaUI('CommInvestMorphStart')) then
 		if IsComm(unitID) then
 			Script.LuaUI.CommInvestMorphStart(unitID)
-		else
-			Spring.Echo("Not a comm.")
 		end
-	else
-		Spring.Echo("Not registered.")
 	end
 
 	return true
@@ -1064,11 +1041,7 @@ local function StopMorph(cmd, unitID, refundMetal)
 	if (Script.LuaUI('CommInvestMorphStop')) then
 		if IsComm(unitID) then
 			Script.LuaUI.CommInvestMorphStop(unitID, refundMetal)
-		else
-			Spring.Echo("Not a comm.")
 		end
-	else
-		Spring.Echo("Not registered.")
 	end
 
 	return true
@@ -1128,7 +1101,10 @@ function gadget:Update()
 				local morphTable = {}
 				for unitID, morphData in pairs(morphUnitsSynced) do
 					if IsComm(unitID) then
-						morphTable[unitID] = {progress = morphData.progress, into = morphData.def.into}
+						morphTable[unitID] = {
+							progress = morphData.progress,
+							morphDef = morphData.def
+						}
 					end
 				end
 				Script.LuaUI.CommInvestMorphUpdate(morphTable)
