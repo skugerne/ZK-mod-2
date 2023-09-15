@@ -33,26 +33,6 @@ local blue = {.2,.2,1,1}
 local grey = {.5,.5,.5,1}
 local white = {1,1,1,1}
 
--- new dyn comms are created after upgrades
--- mostly we don't care, but we will perform the original initialization of our list from this event
--- (NOTE: this does not capture comms on other teams, at least if we don't see the event)
-function widget:UnitCreated(unitID, unitDefID, unitTeam)
-    local unitdef = UnitDefs[unitDefID]
-    if unitdef and unitdef.customParams and unitdef.customParams.dynamic_comm then
-        Spring.Echo("A dyncomm is created, unitID " .. unitID)
-    end
-end
-
--- old dyn comms are destroyed after upgrade
--- mostly we don't care, but we will mark comms as dead in case if wasn't just an upgrade
--- (NOTE: this does not capture comms on other teams, at least if we don't see the event)
-function widget:UnitDestroyed(unitID, unitDefID, unitTeam)
-    if trackedComms[unitID] then
-        Spring.Echo("A dyncomm is dead, unitID " .. unitID)
-        trackedComms[unitID]['unit_destroyed'] = true
-    end
-end
-
 function widget:GameFrame(n)
     frame = frame - 1
     totalFrame = totalFrame + 1
@@ -61,16 +41,18 @@ function widget:GameFrame(n)
         for unitID, unitData in pairs(trackedComms) do
             local unitDefID = Spring.GetUnitDefID(unitID)
             local unitdef = unitDefID and UnitDefs[unitDefID]
+            Spring.Echo("GameFrame() unitID " .. (unitID or '-'))
+            Spring.Echo("GameFrame() unitDefID " .. (unitDefID or '-'))
             if unitdef ~= nil then
                 local teamID = Spring.GetUnitTeam(unitID)
                 local r, g, b = Spring.GetTeamColor(teamID)
                 local _, playerID, _, isAI, side_, allyTeamID = Spring.GetTeamInfo(teamID, false)
                 --local teamNum, leader, dead, isAI, side, allyTeam = Spring.GetTeamInfo(teamID)
                 if isAI then
-                    Spring.Echo("Is an AI  ..... ")
+                    Spring.Echo("GameFrame() AI  ..... ")
                     local name = select(2, Spring.GetAIInfo(teamID))
                 else
-                    Spring.Echo("Is a player ......")
+                    Spring.Echo("GameFrame() Player ......")
                     --local teamName = Spring.GetPlayerInfo(playerID, false)
                     local name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country = Spring.GetPlayerInfo(playerID)
                 end
@@ -81,30 +63,30 @@ function widget:GameFrame(n)
                 local commLevel = Spring.GetUnitRulesParam(unitID, "comm_level") or 0
                 local commCost = Spring.GetUnitRulesParam(unitID, "comm_cost") or 0
 
-                Spring.Echo("side " .. (side or "-"))
-                Spring.Echo("country " .. (country or "-"))
-                Spring.Echo("color (r g b) " .. r .. "/" .. g .. "/" .. b)
-                Spring.Echo("name " .. (name or "-"))
-                Spring.Echo("rangeMult " .. rangeMult)
-                Spring.Echo("damageMult " .. damageMult)
-                Spring.Echo("speedMult " .. speedMult)
-                Spring.Echo("commLevel " .. commLevel)
-                Spring.Echo("commCost " .. commCost)
-                Spring.Echo("unitID " .. unitID)
-                Spring.Echo("unitDefID " .. unitDefID)
-                Spring.Echo("teamID " .. teamID)
-                Spring.Echo("allyTeamID " .. allyTeamID)
+                Spring.Echo("GameFrame() side " .. (side or "-"))
+                Spring.Echo("GameFrame() country " .. (country or "-"))
+                Spring.Echo("GameFrame() color (r g b) " .. r .. "/" .. g .. "/" .. b)
+                Spring.Echo("GameFrame() name " .. (name or "-"))
+                Spring.Echo("GameFrame() rangeMult " .. rangeMult)
+                Spring.Echo("GameFrame() damageMult " .. damageMult)
+                Spring.Echo("GameFrame() speedMult " .. speedMult)
+                Spring.Echo("GameFrame() commLevel " .. commLevel)
+                Spring.Echo("GameFrame() commCost " .. commCost)
+                Spring.Echo("GameFrame() teamID " .. teamID)
+                Spring.Echo("GameFrame() allyTeamID " .. allyTeamID)
 
                 --unitData.color = {r,g,b,1}
                 --unitData.labels.unitID.textColor = {r,g,b,1}
-                unitData.labels.unitID:SetCaption(unitID)
-                --unitData.labels.level:SetCaption(commLevel)
-                unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
-                unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
-                --unitData.labels.rangeMult:SetCaption(rangeMult)
-                --unitData.labels.damageMult:SetCaption(damageMult)
-                --unitData.labels.speedMult:SetCaption(speedMult)
+                unitData.labels.player:SetCaption((name or "-"))
+                unitData.labels.level:SetCaption("L" .. (commLevel+1))
+                unitData.labels.rangeMult:SetCaption(string.format("%.2f",rangeMult))
+                unitData.labels.damageMult:SetCaption(string.format("%.2f",damageMult))
+                unitData.labels.speedMult:SetCaption(string.format("%.2f",speedMult))
             end
+
+            unitData.labels.unitID:SetCaption(unitID)
+            unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
+            unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
         end
     end
 end
@@ -156,11 +138,11 @@ function widget:Initialize()
 		right = 0,
 		y = "30%",
 		height = 60,
-		clientWidth  = 400,
+		clientWidth  = 450,
 		clientHeight = 60,
 		minHeight = 60,
 		maxHeight = 200,
-		minWidth = 250,
+		--minWidth = 250,
 		draggable = true,
 		resizable = true,
 		tweakDraggable = true,
@@ -168,16 +150,21 @@ function widget:Initialize()
 		parentWidgetName = widget:GetInfo().name, --for gui_chili_docking.lua (minimize function)
 	}
 
-    local numColumns = 4
+    local numColumns = 9   -- FIXME: something is wrong
     for idx = 1,numColumns do
         Spring.Echo("Initialize column " .. idx)
-        columnCenters[idx] = idx * windowMain.width / (numColumns+1)
+        columnCenters[idx] = idx * windowMain.width / (numColumns+1)   -- FIXME: something is wrong
     end
 
     -- header row, static
     generateLabelObject(1, 1, 'unitID', white)
-    generateLabelObject(1, 2, 'cost', white)
-    generateLabelObject(1, 3, 'time', white)
+    generateLabelObject(1, 2, 'player', white)
+    generateLabelObject(1, 3, 'level', white)
+    generateLabelObject(1, 4, 'cost', white)
+    generateLabelObject(1, 5, 'time', white)
+    generateLabelObject(1, 6, 'range mult', white)
+    generateLabelObject(1, 7, 'damage mult', white)
+    generateLabelObject(1, 8, 'speed mult', white)
 end
 
 function widget:Shutdown()
@@ -199,24 +186,6 @@ function CommInvestMorphUpdate(morphTable)
             trackedComms[unitID].investedTime = trackedComms[unitID].investedTime +  totalFrame - trackedComms[unitID].upgradeStatusAt
             trackedComms[unitID].upgradeStatusAt = totalFrame
             trackedComms[unitID].uncommittedMetal = morphData.morphDef.metal * morphData.progress
-            --Spring.Echo("The morphDef:")
-            --for k, v in pairs(morphData.morphDef) do
-            --    if type(v) == 'table' then
-            --        Spring.Echo("  -- " .. k)
-            --        for k2, v2 in pairs(v) do
-            --            if type(v2) == 'table' then
-            --                Spring.Echo("    -- " .. k2)
-            --                for k3, v3 in pairs(v2) do
-            --                    Spring.Echo("      -- " .. k3 .. " = " .. tostring(v3))
-            --                end
-            --            else
-            --                Spring.Echo("    -- " .. k2 .. " = " .. tostring(v2))
-            --            end
-            --        end
-            --    else
-            --        Spring.Echo("  -- " .. k .. " = " .. tostring(v))
-            --    end
-            --end
         end
     end
 end
@@ -226,40 +195,23 @@ function CommInvestMorphStart(unitID)
     if trackedComms[unitID] == nil then
         trackedCommsLength = trackedCommsLength + 1
         Spring.Echo("Initialize a dyncomm, unitID " .. unitID)
-        trackedComms[unitID] = {investedMetal = 0, uncommittedMetal = 0, investedTime = 0, index = trackedCommsLength}
-        --local y = 10 + (15 * (trackedCommsLength - 1))
-        trackedComms[unitID].labels = {
-            unitID = generateLabelObject(trackedCommsLength+1, 1, unitID, white),
-            totalCost = generateLabelObject(trackedCommsLength+1, 2, '---', grey),
-            totalTime = generateLabelObject(trackedCommsLength+1, 3, '---', grey)
+        local col = trackedCommsLength+1
+        trackedComms[unitID] = {
+            investedMetal = 0,
+            uncommittedMetal = 0,
+            investedTime = 0,
+            index = trackedCommsLength,
+            labels = {
+                unitID =     generateLabelObject(col, 1, unitID, white),
+                player =     generateLabelObject(col, 2, '---', grey),
+                level =      generateLabelObject(col, 3, '---', grey),
+                totalCost =  generateLabelObject(col, 4, '---', grey),
+                totalTime =  generateLabelObject(col, 5, '---', grey),
+                rangeMult =  generateLabelObject(col, 6, '---', grey),
+                damageMult = generateLabelObject(col, 7, '---', grey),
+                speedMult =  generateLabelObject(col, 8, '---', grey)
+            }
         }
-        --trackedComms[unitID].labels = {
-        --    unitID = Label:New {
-        --        parent = windowMain,
-        --        x = (windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
-        --        y = y,
-        --        fontSize = 14,
-        --        textColor = white,
-        --        caption = '---',
-        --    },
-        --    totalCost = Label:New {
-        --        parent = windowMain,
-        --        x = (windowMain.width / 2) - (font:GetTextWidth('---', 20) / 2),
-        --        y = y,
-        --        fontSize = 14,
-        --        textColor = grey,
-        --        caption = '---',
-        --    },
-        --    totalTime = Label:New {
-        --        parent = windowMain,
-        --        x = (3 * windowMain.width / 4) - (font:GetTextWidth('---', 20) / 2),
-        --        y = y,
-        --        fontSize = 14,
-        --        textColor = grey,
-        --        caption = '---',
-        --    }
-        --}
-
         windowMain:Resize(nil, (15 * trackedCommsLength) + 35)
     end
 
