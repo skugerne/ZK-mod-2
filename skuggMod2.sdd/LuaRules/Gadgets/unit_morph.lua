@@ -940,6 +940,33 @@ local morphUnitsSynced = {}
 
 --//synced -> unsynced actions
 
+local playerlist = Spring.GetPlayerList()
+local teamList = Spring.GetTeamList()
+local teamInfo = {}
+
+for i = 1, #teamList do
+	local teamID = teamList[i]
+	if teamID ~= Spring.GetGaiaTeamID() then
+		local _,_,_,isAI,_,allyTeamID = Spring.GetTeamInfo(teamID)
+		teamInfo[teamID] = {
+			isAI = isAI,
+			allyTeamID = allyTeamID,
+			playerID = nil,
+			name = nil
+		}
+		if isAI then isAI = "true" else isAI = "false" end
+		Spring.Echo("Have teamID=" .. teamID .. " with isAI " .. (isAI or "-") .. " allyTeamID " .. (allyTeamID or "-"))
+	end
+end
+
+for i = 1, #playerlist do
+	local playerID = playerlist[i]
+	local name, _, _, teamID, allyTeamID = Spring.GetPlayerInfo(playerID)
+	teamInfo[teamID].playerID = playerID
+	teamInfo[teamID].name = name
+	Spring.Echo("Have playerID=" .. playerID .. " with name " .. (name or "-") .. " teamID " .. (teamID or "-") .. " allyTeamID " .. (allyTeamID or "-"))
+end
+
 local function IsComm(unitID)
 	local unitDefID = Spring.GetUnitDefID(unitID)
 	local unitdef = UnitDefs[unitDefID]
@@ -951,13 +978,17 @@ local function getCommProps(unitID)
 	local unitdef = UnitDefs[unitDefID]
 	if unitdef then
 		Spring.Echo("Was able to look up def for unitID=" .. unitID .. " in getCommProps().")
+		local teamID = Spring.GetUnitTeam(unitID)
 		return {
 			rangeMult = Spring.GetUnitRulesParam(unitID, "comm_range_mult") or 1,
 			damageMult = Spring.GetUnitRulesParam(unitID, "comm_damage_mult") or 1,
 			speedMult = Spring.GetUnitRulesParam(unitID, "upgradesSpeedMult") or 1,
 			commLevel = Spring.GetUnitRulesParam(unitID, "comm_level") or 0,
 			commCost = Spring.GetUnitRulesParam(unitID, "comm_cost") or 0,
-			team = Spring.GetUnitTeam(unitID)
+			teamID = teamID,
+			allyTeamID = teamInfo[teamID].allyTeamID,
+			playerID = teamInfo[teamID].playerID,
+			name = teamInfo[teamID].name
 		}
 	else
 		Spring.Echo("Failed to look up def for unitID=" .. unitID .. " in getCommProps().")

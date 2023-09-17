@@ -39,28 +39,16 @@ function widget:GameFrame(n)
     if frame <= 0 then 
         frame = 7 -- just over 4 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
-            local teamID = unitData.commProps.team          -- a number, such as 0 or 1
-            local r, g, b = Spring.GetTeamColor(teamID)
-            local _, playerID, _, isAI, side_, allyTeamID = Spring.GetTeamInfo(teamID, false)
-            --local teamNum, leader, dead, isAI, side, allyTeam = Spring.GetTeamInfo(teamID)
-            if isAI then
-                Spring.Echo("GameFrame() AI  ..... ")
-                local name = select(2, Spring.GetAIInfo(teamID))
-            else
-                Spring.Echo("GameFrame() Player ......")
-                --local teamName = Spring.GetPlayerInfo(playerID, false)
-                local name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country = Spring.GetPlayerInfo(playerID)
-            end
-            --Spring.Echo("GameFrame() side " .. (side or "-"))
-            --Spring.Echo("GameFrame() country " .. (country or "-"))
+            local r, g, b = Spring.GetTeamColor(unitData.commProps.teamID)
             Spring.Echo("GameFrame() color (r g b) " .. r .. "/" .. g .. "/" .. b)
-            Spring.Echo("GameFrame() name " .. (name or "-"))
+            Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
             Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
             Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
             Spring.Echo("GameFrame() speedMult " .. unitData.commProps.speedMult)
             Spring.Echo("GameFrame() commLevel " .. unitData.commProps.commLevel)
             Spring.Echo("GameFrame() commCost " .. unitData.commProps.commCost)
-            --Spring.Echo("GameFrame() teamID " .. teamID)
+            Spring.Echo("GameFrame() teamID " .. unitData.commProps.teamID)
+            Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
             --unitData.color = {r,g,b,1}
             --unitData.labels.unitID.textColor = {r,g,b,1}
             unitData.labels.player:SetCaption((name or "-"))
