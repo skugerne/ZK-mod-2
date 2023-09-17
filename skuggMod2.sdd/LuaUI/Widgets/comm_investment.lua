@@ -39,50 +39,35 @@ function widget:GameFrame(n)
     if frame <= 0 then 
         frame = 7 -- just over 4 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
-            local unitDefID = Spring.GetUnitDefID(unitID)
-            local unitdef = unitDefID and UnitDefs[unitDefID]
-            Spring.Echo("GameFrame() unitID " .. (unitID or '-'))
-            Spring.Echo("GameFrame() unitDefID " .. (unitDefID or '-'))
-            if unitdef ~= nil then
-                local teamID = Spring.GetUnitTeam(unitID)
-                local r, g, b = Spring.GetTeamColor(teamID)
-                local _, playerID, _, isAI, side_, allyTeamID = Spring.GetTeamInfo(teamID, false)
-                --local teamNum, leader, dead, isAI, side, allyTeam = Spring.GetTeamInfo(teamID)
-                if isAI then
-                    Spring.Echo("GameFrame() AI  ..... ")
-                    local name = select(2, Spring.GetAIInfo(teamID))
-                else
-                    Spring.Echo("GameFrame() Player ......")
-                    --local teamName = Spring.GetPlayerInfo(playerID, false)
-                    local name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country = Spring.GetPlayerInfo(playerID)
-                end
-
-                local rangeMult = Spring.GetUnitRulesParam(unitID, "comm_range_mult") or 1
-                local damageMult = Spring.GetUnitRulesParam(unitID, "comm_damage_mult") or 1
-                local speedMult = Spring.GetUnitRulesParam(unitID, "upgradesSpeedMult") or 1
-                local commLevel = Spring.GetUnitRulesParam(unitID, "comm_level") or 0
-                local commCost = Spring.GetUnitRulesParam(unitID, "comm_cost") or 0
-
-                Spring.Echo("GameFrame() side " .. (side or "-"))
-                Spring.Echo("GameFrame() country " .. (country or "-"))
-                Spring.Echo("GameFrame() color (r g b) " .. r .. "/" .. g .. "/" .. b)
-                Spring.Echo("GameFrame() name " .. (name or "-"))
-                Spring.Echo("GameFrame() rangeMult " .. rangeMult)
-                Spring.Echo("GameFrame() damageMult " .. damageMult)
-                Spring.Echo("GameFrame() speedMult " .. speedMult)
-                Spring.Echo("GameFrame() commLevel " .. commLevel)
-                Spring.Echo("GameFrame() commCost " .. commCost)
-                Spring.Echo("GameFrame() teamID " .. teamID)
-                Spring.Echo("GameFrame() allyTeamID " .. allyTeamID)
-
-                --unitData.color = {r,g,b,1}
-                --unitData.labels.unitID.textColor = {r,g,b,1}
-                unitData.labels.player:SetCaption((name or "-"))
-                unitData.labels.level:SetCaption("L" .. (commLevel+1))
-                unitData.labels.rangeMult:SetCaption(string.format("%.2f",rangeMult))
-                unitData.labels.damageMult:SetCaption(string.format("%.2f",damageMult))
-                unitData.labels.speedMult:SetCaption(string.format("%.2f",speedMult))
+            local teamID = unitData.commProps.team          -- a number, such as 0 or 1
+            local r, g, b = Spring.GetTeamColor(teamID)
+            local _, playerID, _, isAI, side_, allyTeamID = Spring.GetTeamInfo(teamID, false)
+            --local teamNum, leader, dead, isAI, side, allyTeam = Spring.GetTeamInfo(teamID)
+            if isAI then
+                Spring.Echo("GameFrame() AI  ..... ")
+                local name = select(2, Spring.GetAIInfo(teamID))
+            else
+                Spring.Echo("GameFrame() Player ......")
+                --local teamName = Spring.GetPlayerInfo(playerID, false)
+                local name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country = Spring.GetPlayerInfo(playerID)
             end
+            --Spring.Echo("GameFrame() side " .. (side or "-"))
+            --Spring.Echo("GameFrame() country " .. (country or "-"))
+            Spring.Echo("GameFrame() color (r g b) " .. r .. "/" .. g .. "/" .. b)
+            Spring.Echo("GameFrame() name " .. (name or "-"))
+            Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
+            Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
+            Spring.Echo("GameFrame() speedMult " .. unitData.commProps.speedMult)
+            Spring.Echo("GameFrame() commLevel " .. unitData.commProps.commLevel)
+            Spring.Echo("GameFrame() commCost " .. unitData.commProps.commCost)
+            --Spring.Echo("GameFrame() teamID " .. teamID)
+            --unitData.color = {r,g,b,1}
+            --unitData.labels.unitID.textColor = {r,g,b,1}
+            unitData.labels.player:SetCaption((name or "-"))
+            unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
+            unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
+            unitData.labels.damageMult:SetCaption(string.format("%.2f",unitData.commProps.damageMult))
+            unitData.labels.speedMult:SetCaption(string.format("%.2f",unitData.commProps.speedMult))
 
             unitData.labels.unitID:SetCaption(unitID)
             unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
@@ -190,17 +175,19 @@ function CommInvestMorphUpdate(morphTable)
     end
 end
 
-function CommInvestMorphStart(unitID)
+function CommInvestMorphStart(unitID, commProps)
+    -- it appears that sometimes this is called for an replaced (no longer valid) comm unitID
     Spring.Echo("Got a call to CommInvestMorphStart, unitID=" .. unitID .. ".")
     if trackedComms[unitID] == nil then
         trackedCommsLength = trackedCommsLength + 1
-        Spring.Echo("Initialize a dyncomm, unitID " .. unitID)
+        Spring.Echo("Initialize a dyncomm tracking record, unitID=" .. unitID)
         local col = trackedCommsLength+1
         trackedComms[unitID] = {
             investedMetal = 0,
             uncommittedMetal = 0,
             investedTime = 0,
             index = trackedCommsLength,
+            commProps = commProps,
             labels = {
                 unitID =     generateLabelObject(col, 1, unitID, white),
                 player =     generateLabelObject(col, 2, '---', grey),
@@ -236,12 +223,14 @@ function CommInvestMorphStop(unitID, refundMetal)
     end
 end
 
-function CommInvestMorphFinished(oldUnitID, newUnitID)
+function CommInvestMorphFinished(oldUnitID, newUnitID, commProps)
     Spring.Echo("Got a call to CommInvestMorphFinished, oldUnitID=" .. oldUnitID .. ", newUnitID=" .. newUnitID .. ".")
     CommInvestMorphStop(oldUnitID, 0)
     if trackedComms[newUnitID] == nil then
         trackedComms[newUnitID] = trackedComms[oldUnitID]
         trackedComms[oldUnitID] = nil
+        Spring.Echo("Deleted unitID=" .. oldUnitID .. "from list of tracked comms.")
+        trackedComms[newUnitID].commProps = commProps
     else
         Spring.Echo("FROWN: A known unitID been given as a new unitID.")
     end

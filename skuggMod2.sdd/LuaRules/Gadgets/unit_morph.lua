@@ -946,6 +946,24 @@ local function IsComm(unitID)
 	return (unitdef and unitdef.customParams and unitdef.customParams.dynamic_comm)
 end
 
+local function getCommProps(unitID)
+	local unitDefID = Spring.GetUnitDefID(unitID)
+	local unitdef = UnitDefs[unitDefID]
+	if unitdef then
+		Spring.Echo("Was able to look up def for unitID=" .. unitID .. " in getCommProps().")
+		return {
+			rangeMult = Spring.GetUnitRulesParam(unitID, "comm_range_mult") or 1,
+			damageMult = Spring.GetUnitRulesParam(unitID, "comm_damage_mult") or 1,
+			speedMult = Spring.GetUnitRulesParam(unitID, "upgradesSpeedMult") or 1,
+			commLevel = Spring.GetUnitRulesParam(unitID, "comm_level") or 0,
+			commCost = Spring.GetUnitRulesParam(unitID, "comm_cost") or 0,
+			team = Spring.GetUnitTeam(unitID)
+		}
+	else
+		Spring.Echo("Failed to look up def for unitID=" .. unitID .. " in getCommProps().")
+	end
+end
+
 local function SelectSwap(cmd, oldID, newID)
 	local selUnits = Spring.GetSelectedUnits()
 	for i = 1, #selUnits do
@@ -978,7 +996,7 @@ local function SelectSwap(cmd, oldID, newID)
 
 	if (Script.LuaUI('CommInvestMorphFinished')) then
 		if IsComm(oldID) then
-			Script.LuaUI.CommInvestMorphFinished(oldID,newID)
+			Script.LuaUI.CommInvestMorphFinished(oldID, newID, getCommProps(newID))
 		end
 	end
 
@@ -1011,7 +1029,7 @@ local function StartMorph(cmd, unitID, unitDefID, morphID)
 
 	if (Script.LuaUI('CommInvestMorphStart')) then
 		if IsComm(unitID) then
-			Script.LuaUI.CommInvestMorphStart(unitID)
+			Script.LuaUI.CommInvestMorphStart(unitID, getCommProps(unitID))
 		end
 	end
 
