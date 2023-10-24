@@ -25,6 +25,7 @@ local Label
 local font -- dummy, need this to call GetTextWidth without looking up an instance
 local fontSize = 14
 local windowMain
+local vsx,vsy = 0,0
 local columnCenters = {}
 
 local red = {1,0,0,1}
@@ -39,8 +40,7 @@ function widget:GameFrame(n)
     if frame <= 0 then 
         frame = 7 -- just over 4 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
-            local r, g, b = Spring.GetTeamColor(unitData.commProps.teamID)
-            Spring.Echo("GameFrame() color (r g b) " .. r .. "/" .. g .. "/" .. b)
+            Spring.Echo("GameFrame() color (r g b) " .. unitData.commProps.r .. "/" .. unitData.commProps.g .. "/" .. unitData.commProps.b)
             Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
             Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
             Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
@@ -51,6 +51,7 @@ function widget:GameFrame(n)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
             --unitData.color = {r,g,b,1}
             --unitData.labels.unitID.textColor = {r,g,b,1}
+            -- except for the problem with units being captured, could set label color during initialization
             unitData.labels.player:SetCaption((name or "-"))
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
@@ -99,6 +100,10 @@ function widget:Initialize()
 	widgetHandler:RegisterGlobal('CommInvestMorphStart', CommInvestMorphStart)
 	widgetHandler:RegisterGlobal('CommInvestMorphStop', CommInvestMorphStop)
 
+    local screenWidth, screenHeight = Spring.GetViewGeometry()
+    local w = screenWidth / 2
+    local h = 60
+
     windowMain = Window:New{
 		color = {1,1,1,0.8},
 		parent = Chili.Screen0,
@@ -109,24 +114,29 @@ function widget:Initialize()
 		padding = {0,0,0,0},
 		margin = {0,0,0,0},
 		right = 0,
-		y = "30%",
-		height = 60,
-		clientWidth  = 450,
-		clientHeight = 60,
+		x = vsx-w, -- these are retained between games, suitable initial values mysterious
+		y = 100,   -- these are retained between games, suitable initial values mysterious
+		width = w,
+		height = h,
+		minWidth = w,              -- make width resize impossible
+		maxWidth = w,              -- make width resize impossible
 		minHeight = 60,
-		maxHeight = 200,
-		--minWidth = 250,
 		draggable = true,
-		resizable = true,
+		resizable = false,
 		tweakDraggable = true,
-		tweakResizable = true,
-		parentWidgetName = widget:GetInfo().name, --for gui_chili_docking.lua (minimize function)
+		tweakResizable = false,
+		parentWidgetName = Chili.Screen0
 	}
 
-    local numColumns = 9   -- FIXME: something is wrong
+    Spring.Echo("CommInvestment windowMain.width:  " .. windowMain.width)
+    Spring.Echo("CommInvestment windowMain.height: " .. windowMain.height)
+    Spring.Echo("CommInvestment windowMain.x:      " .. windowMain.x)
+    Spring.Echo("CommInvestment windowMain.y:      " .. windowMain.y)
+
+    local numColumns = 8
     for idx = 1,numColumns do
         Spring.Echo("Initialize column " .. idx)
-        columnCenters[idx] = idx * windowMain.width / (numColumns+1)   -- FIXME: something is wrong
+        columnCenters[idx] = idx * windowMain.width / (numColumns+1)
     end
 
     -- header row, static
@@ -146,6 +156,11 @@ function widget:Shutdown()
 	widgetHandler:DeregisterGlobal('CommInvestMorphStart', CommInvestMorphStart)
 	widgetHandler:DeregisterGlobal('CommInvestMorphStop', CommInvestMorphStop)
 	if windowMain then windowMain:Dispose() end
+end
+
+function widget:ViewResize(vsx_, vsy_)
+	vsx = vsx_
+	vsy = vsy_
 end
 
 function CommInvestMorphUpdate(morphTable)
