@@ -948,11 +948,15 @@ for i = 1, #teamList do
 	local teamID = teamList[i]
 	if teamID ~= Spring.GetGaiaTeamID() then
 		local _,_,_,isAI,_,allyTeamID = Spring.GetTeamInfo(teamID)
+		local r, g, b = Spring.GetTeamColor(teamID)
 		teamInfo[teamID] = {
 			isAI = isAI,
 			allyTeamID = allyTeamID,
 			playerID = nil,
-			name = nil
+			name = nil,
+			r = r,
+			g = g,
+			b = b
 		}
 		if isAI then isAI = "true" else isAI = "false" end
 		Spring.Echo("Have teamID=" .. teamID .. " with isAI " .. (isAI or "-") .. " allyTeamID " .. (allyTeamID or "-"))
@@ -979,16 +983,21 @@ local function getCommProps(unitID)
 	if unitdef then
 		Spring.Echo("Was able to look up def for unitID=" .. unitID .. " in getCommProps().")
 		local teamID = Spring.GetUnitTeam(unitID)
+		local hp, maxhp = Spring.GetUnitHealth(unitID)
 		return {
 			rangeMult = Spring.GetUnitRulesParam(unitID, "comm_range_mult") or 1,
 			damageMult = Spring.GetUnitRulesParam(unitID, "comm_damage_mult") or 1,
 			speedMult = Spring.GetUnitRulesParam(unitID, "upgradesSpeedMult") or 1,
 			commLevel = Spring.GetUnitRulesParam(unitID, "comm_level") or 0,
 			commCost = Spring.GetUnitRulesParam(unitID, "comm_cost") or 0,
+			health = maxhp,
 			teamID = teamID,
 			allyTeamID = teamInfo[teamID].allyTeamID,
 			playerID = teamInfo[teamID].playerID,
-			name = teamInfo[teamID].name
+			name = teamInfo[teamID].name,
+			r = teamInfo[teamID].r,
+			g = teamInfo[teamID].g,
+			b = teamInfo[teamID].b
 		}
 	else
 		Spring.Echo("Failed to look up def for unitID=" .. unitID .. " in getCommProps().")

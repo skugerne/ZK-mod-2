@@ -54,6 +54,7 @@ function widget:GameFrame(n)
             -- except for the problem with units being captured, could set label color during initialization
             unitData.labels.player:SetCaption((name or "-"))
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
+            unitData.labels.health:SetCaption(unitData.commProps.health)
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
             unitData.labels.damageMult:SetCaption(string.format("%.2f",unitData.commProps.damageMult))
             unitData.labels.speedMult:SetCaption(string.format("%.2f",unitData.commProps.speedMult))
@@ -63,6 +64,13 @@ function widget:GameFrame(n)
             unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
         end
     end
+end
+
+function generateHeaderObject(txt)
+    return {
+        txt = txt,
+        len = font:GetTextWidth(txt, fontSize)
+    }
 end
 
 function generateLabelObject(row, col, txt, color)
@@ -133,21 +141,38 @@ function widget:Initialize()
     Spring.Echo("CommInvestment windowMain.x:      " .. windowMain.x)
     Spring.Echo("CommInvestment windowMain.y:      " .. windowMain.y)
 
-    local numColumns = 8
-    for idx = 1,numColumns do
-        Spring.Echo("Initialize column " .. idx)
-        columnCenters[idx] = idx * windowMain.width / (numColumns+1)
-    end
+    local headerNames = {
+        'unitID',
+        'player',
+        'level',
+        'cost',
+        'time',
+        'health',
+        'rng mul',
+        'dmg mul',
+        'spd mul'
+    }
 
-    -- header row, static
-    generateLabelObject(1, 1, 'unitID', white)
-    generateLabelObject(1, 2, 'player', white)
-    generateLabelObject(1, 3, 'level', white)
-    generateLabelObject(1, 4, 'cost', white)
-    generateLabelObject(1, 5, 'time', white)
-    generateLabelObject(1, 6, 'range mult', white)
-    generateLabelObject(1, 7, 'damage mult', white)
-    generateLabelObject(1, 8, 'speed mult', white)
+    local headers = {}
+    for idx = 1, #headerNames do
+        headers[idx] = generateHeaderObject(headerNames[idx])
+    end
+    local txtlen = 0
+    for idx = 1, #headerNames do
+        txtlen = txtlen + headers[idx].len
+    end
+    local gap = (w - txtlen) / (#headerNames * 2)
+
+    Spring.Echo("CommInvestment txtlen:            " .. txtlen)
+    Spring.Echo("CommInvestment gap:               " .. gap)
+
+    local accumulator = 0
+    for idx = 1, #headerNames do
+        accumulator = accumulator + gap + headers[idx].len / 2
+        columnCenters[idx] = accumulator
+        accumulator = accumulator + gap + headers[idx].len / 2
+        generateLabelObject(1, idx, headerNames[idx], white)
+    end
 end
 
 function widget:Shutdown()
@@ -193,13 +218,14 @@ function CommInvestMorphStart(unitID, commProps)
             commProps = commProps,
             labels = {
                 unitID =     generateLabelObject(col, 1, unitID, white),
-                player =     generateLabelObject(col, 2, '---', grey),
-                level =      generateLabelObject(col, 3, '---', grey),
-                totalCost =  generateLabelObject(col, 4, '---', grey),
-                totalTime =  generateLabelObject(col, 5, '---', grey),
-                rangeMult =  generateLabelObject(col, 6, '---', grey),
-                damageMult = generateLabelObject(col, 7, '---', grey),
-                speedMult =  generateLabelObject(col, 8, '---', grey)
+                player =     generateLabelObject(col, 2, '---',  grey),
+                level =      generateLabelObject(col, 3, '---',  grey),
+                totalCost =  generateLabelObject(col, 4, '----', grey),
+                totalTime =  generateLabelObject(col, 5, '----', grey),
+                health =     generateLabelObject(col, 6, '----', grey),
+                rangeMult =  generateLabelObject(col, 7, '----', grey),
+                damageMult = generateLabelObject(col, 8, '----', grey),
+                speedMult =  generateLabelObject(col, 9, '----', grey)
             }
         }
         windowMain:Resize(nil, (15 * trackedCommsLength) + 35)
