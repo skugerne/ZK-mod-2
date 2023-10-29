@@ -66,21 +66,17 @@ function widget:GameFrame(n)
     end
 end
 
-function generateHeaderObject(txt)
-    return {
-        txt = txt,
-        len = font:GetTextWidth(txt, fontSize)
-    }
-end
-
 function generateLabelObject(row, col, txt, color)
+    Spring.Echo("Call generateLabelObject().")
     return Label:New {
         parent = windowMain,
-        x = columnCenters[col] - (font:GetTextWidth(txt, fontSize) / 2),
+        x = columnCenters[col],
         y = 10 + (15 * (row - 1)),
         fontSize = fontSize,
         textColor = color,
         caption = txt,
+        align = 'center',
+        autosize = true
     }
 end
 
@@ -153,24 +149,24 @@ function widget:Initialize()
         'spd mul'
     }
 
-    local headers = {}
+    local textWidths = {}
     for idx = 1, #headerNames do
-        headers[idx] = generateHeaderObject(headerNames[idx])
+        textWidths[idx] = font:GetTextWidth(headerNames[idx], fontSize)
     end
     local txtlen = 0
     for idx = 1, #headerNames do
-        txtlen = txtlen + headers[idx].len
+        txtlen = txtlen + textWidths[idx]
     end
-    local gap = (w - txtlen) / (#headerNames * 2)
+    local gap = (w - txtlen) / #headerNames
 
     Spring.Echo("CommInvestment txtlen:            " .. txtlen)
     Spring.Echo("CommInvestment gap:               " .. gap)
 
     local accumulator = 0
     for idx = 1, #headerNames do
-        accumulator = accumulator + gap + headers[idx].len / 2
-        columnCenters[idx] = accumulator
-        accumulator = accumulator + gap + headers[idx].len / 2
+        local colWid = gap + textWidths[idx]
+        columnCenters[idx] = accumulator + colWid / 2
+        accumulator = accumulator + colWid
         generateLabelObject(1, idx, headerNames[idx], white)
     end
 end
@@ -218,14 +214,14 @@ function CommInvestMorphStart(unitID, commProps)
             commProps = commProps,
             labels = {
                 unitID =     generateLabelObject(col, 1, unitID, white),
-                player =     generateLabelObject(col, 2, '---',  grey),
-                level =      generateLabelObject(col, 3, '---',  grey),
-                totalCost =  generateLabelObject(col, 4, '----', grey),
-                totalTime =  generateLabelObject(col, 5, '----', grey),
-                health =     generateLabelObject(col, 6, '----', grey),
-                rangeMult =  generateLabelObject(col, 7, '----', grey),
-                damageMult = generateLabelObject(col, 8, '----', grey),
-                speedMult =  generateLabelObject(col, 9, '----', grey)
+                player =     generateLabelObject(col, 2, '-', grey),
+                level =      generateLabelObject(col, 3, '-', grey),
+                totalCost =  generateLabelObject(col, 4, '-', grey),
+                totalTime =  generateLabelObject(col, 5, '-', grey),
+                health =     generateLabelObject(col, 6, '-', grey),
+                rangeMult =  generateLabelObject(col, 7, '-', grey),
+                damageMult = generateLabelObject(col, 8, '-', grey),
+                speedMult =  generateLabelObject(col, 9, '-', grey)
             }
         }
         windowMain:Resize(nil, (15 * trackedCommsLength) + 35)
