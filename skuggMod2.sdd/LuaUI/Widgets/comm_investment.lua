@@ -51,6 +51,7 @@ function widget:GameFrame(n)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
 
             -- apparently if this is a single dash, the centered labels wander around
+            -- (actually it might move around still, but a lot less)
             unitData.labels.player:SetCaption((name or "--"))
 
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
@@ -59,7 +60,7 @@ function widget:GameFrame(n)
             unitData.labels.damageMult:SetCaption(string.format("%.2f",unitData.commProps.damageMult))
             unitData.labels.speedMult:SetCaption(string.format("%.2f",unitData.commProps.speedMult))
 
-            -- show color of commander
+            -- show color of commander (the wrong color)
             -- except for the problem with units being captured, could set label color during initialization
             local font = {
                 color = {r,g,b,1},
@@ -80,8 +81,11 @@ function generateLabelObject(row, col, txt, color)
         parent = windowMain,
         x = columnCenters[col],
         y = 10 + (15 * (row - 1)),
-        fontSize = fontSize,
-        textColor = color,
+        font = {
+            color = color,
+            size = fontSize,
+            shadow = true
+        },
         caption = txt,
         align = 'center',
         autosize = true,
