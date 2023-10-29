@@ -12,8 +12,6 @@ end
 
 include("LuaRules/Configs/customcmds.h.lua")
 
-local spGetSpectatingState	= Spring.GetSpectatingState
-
 local frame = 0
 local totalFrame = 0
 local trackedComms = {}
@@ -28,9 +26,6 @@ local windowMain
 local vsx,vsy = 0,0
 local columnCenters = {}
 
-local red = {1,0,0,1}
-local green = {0,1,0,1}
-local blue = {.2,.2,1,1}
 local grey = {.5,.5,.5,1}
 local white = {1,1,1,1}
 
@@ -38,7 +33,7 @@ function widget:GameFrame(n)
     frame = frame - 1
     totalFrame = totalFrame + 1
     if frame <= 0 then 
-        frame = 7 -- just over 4 times per second (engine does 30 frames per second)
+        frame = 11 -- just under 3 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
             Spring.Echo("GameFrame() color (r g b) " .. unitData.commProps.r .. "/" .. unitData.commProps.g .. "/" .. unitData.commProps.b)
             Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
@@ -50,10 +45,7 @@ function widget:GameFrame(n)
             Spring.Echo("GameFrame() teamID " .. unitData.commProps.teamID)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
 
-            -- apparently if this is a single dash, the centered labels wander around
-            -- (actually it might move around still, but a lot less)
-            unitData.labels.player:SetCaption((name or "--"))
-
+            unitData.labels.player:SetCaption((name or "-"))
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
             unitData.labels.health:SetCaption(unitData.commProps.health)
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
@@ -62,12 +54,12 @@ function widget:GameFrame(n)
 
             -- show color of commander (the wrong color)
             -- except for the problem with units being captured, could set label color during initialization
-            local font = {
+            local fontparams = {
                 color = {r,g,b,1},
-                size = 14,
+                size = fontSize,
                 shadow = true
             }
-            unitData.labels.unitID.font = Chili.Font:New(font)
+            unitData.labels.unitID.font = Chili.Font:New(fontparams)
             unitData.labels.unitID:SetCaption(unitID)
             unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
             unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
@@ -76,7 +68,6 @@ function widget:GameFrame(n)
 end
 
 function generateLabelObject(row, col, txt, color)
-    Spring.Echo("Call generateLabelObject().")
     return Label:New {
         parent = windowMain,
         x = columnCenters[col],
@@ -88,9 +79,7 @@ function generateLabelObject(row, col, txt, color)
         },
         caption = txt,
         align = 'center',
-        autosize = true,
-        comm_investment_row = row,
-        comm_investment_col = col
+        autosize = false                   -- if this is true, text can wander over time
     }
 end
 
@@ -105,10 +94,9 @@ function widget:Initialize()
 	Window = Chili.Window
 	Label = Chili.Label
 	Image = Chili.Image
-	
 	font = Chili.Font:New{} -- need this to call GetTextWidth without looking up an instance
 
-    if spGetSpectatingState() then
+    if Spring.GetSpectatingState() then
         widgetHandler:RemoveWidget()
     end
 
@@ -119,7 +107,7 @@ function widget:Initialize()
 	widgetHandler:RegisterGlobal('CommInvestMorphStop', CommInvestMorphStop)
 
     local screenWidth, screenHeight = Spring.GetViewGeometry()
-    local w = screenWidth / 2
+    local w = screenWidth * 0.4
     local h = 60
 
     windowMain = Window:New{
@@ -166,6 +154,7 @@ function widget:Initialize()
     local textWidths = {}
     for idx = 1, #headerNames do
         textWidths[idx] = font:GetTextWidth(headerNames[idx], fontSize)
+        Spring.Echo("CommInvestment txt W:             " .. textWidths[idx])
     end
     local txtlen = 0
     for idx = 1, #headerNames do
@@ -175,11 +164,13 @@ function widget:Initialize()
 
     Spring.Echo("CommInvestment txtlen:            " .. txtlen)
     Spring.Echo("CommInvestment gap:               " .. gap)
+    Spring.Echo("CommInvestment num header names:  " .. #headerNames)
 
     local accumulator = 0
     for idx = 1, #headerNames do
         local colWid = gap + textWidths[idx]
         columnCenters[idx] = accumulator + colWid / 2
+        Spring.Echo("CommInvestment col C:             " .. columnCenters[idx])
         accumulator = accumulator + colWid
         generateLabelObject(1, idx, headerNames[idx], white)
     end
@@ -194,6 +185,7 @@ function widget:Shutdown()
 end
 
 function widget:ViewResize(vsx_, vsy_)
+    Spring.Echo("Got a call to ViewResize.")
 	vsx = vsx_
 	vsy = vsy_
 end
