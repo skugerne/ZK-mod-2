@@ -52,7 +52,10 @@ function widget:GameFrame(n)
             --unitData.color = {r,g,b,1}
             --unitData.labels.unitID.textColor = {r,g,b,1}
             -- except for the problem with units being captured, could set label color during initialization
-            unitData.labels.player:SetCaption((name or "-"))
+
+            -- apparently if this is a single dash, the centered labels wander around
+            unitData.labels.player:SetCaption((name or "--"))
+
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
             unitData.labels.health:SetCaption(unitData.commProps.health)
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
@@ -76,7 +79,9 @@ function generateLabelObject(row, col, txt, color)
         textColor = color,
         caption = txt,
         align = 'center',
-        autosize = true
+        autosize = true,
+        comm_investment_row = row,
+        comm_investment_col = col
     }
 end
 
