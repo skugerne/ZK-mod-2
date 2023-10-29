@@ -49,9 +49,6 @@ function widget:GameFrame(n)
             Spring.Echo("GameFrame() commCost " .. unitData.commProps.commCost)
             Spring.Echo("GameFrame() teamID " .. unitData.commProps.teamID)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
-            --unitData.color = {r,g,b,1}
-            --unitData.labels.unitID.textColor = {r,g,b,1}
-            -- except for the problem with units being captured, could set label color during initialization
 
             -- apparently if this is a single dash, the centered labels wander around
             unitData.labels.player:SetCaption((name or "--"))
@@ -62,6 +59,14 @@ function widget:GameFrame(n)
             unitData.labels.damageMult:SetCaption(string.format("%.2f",unitData.commProps.damageMult))
             unitData.labels.speedMult:SetCaption(string.format("%.2f",unitData.commProps.speedMult))
 
+            -- show color of commander
+            -- except for the problem with units being captured, could set label color during initialization
+            local font = {
+                color = {r,g,b,1},
+                size = 14,
+                shadow = true
+            }
+            unitData.labels.unitID.font = Chili.Font:New(font)
             unitData.labels.unitID:SetCaption(unitID)
             unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
             unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
