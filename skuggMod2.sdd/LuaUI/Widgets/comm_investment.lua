@@ -67,6 +67,29 @@ function widget:GameFrame(n)
     end
 end
 
+function rectangleVertices()
+    gl.Vertex(-1,  1, 0)  -- top left
+    gl.Vertex( 1,  1, 0)  -- top right
+    gl.Vertex( 1, -1, 0)  -- bottom right
+    gl.Vertex(-1, -1, 0)  -- bottom left
+end
+
+local rectangleDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, rectangleVertices)
+
+function widget:DrawScreenPost()
+    if windowMain ~= nil then
+        local screenWidth, screenHeight = Spring.GetViewGeometry()
+        gl.PushMatrix()
+        gl.Translate(windowMain.x,screenHeight - windowMain.y,1)
+        gl.Scale(10,10,1)
+        gl.LineWidth(1)
+        gl.DepthTest(false)
+        gl.Color(1,0,0,1)
+        gl.CallList(rectangleDrawList)
+        gl.PopMatrix()
+    end
+end
+
 function generateLabelObject(row, col, txt, color)
     return Label:New {
         parent = windowMain,
@@ -85,26 +108,26 @@ end
 
 function widget:Initialize()
     Chili = WG.Chili;
-	if (not Chili) then
+    if (not Chili) then
         Spring.Echo("No Chili!")
-		widgetHandler:RemoveWidget()
-		return
-	end
+        widgetHandler:RemoveWidget()
+        return
+    end
 
-	Window = Chili.Window
-	Label = Chili.Label
-	Image = Chili.Image
-	font = Chili.Font:New{} -- need this to call GetTextWidth without looking up an instance
+    Window = Chili.Window
+    Label = Chili.Label
+    Image = Chili.Image
+    font = Chili.Font:New{} -- need this to call GetTextWidth without looking up an instance
 
     if Spring.GetSpectatingState() then
         widgetHandler:RemoveWidget()
     end
 
     -- register our functions so that unit_morph.lua can send us updates
-	widgetHandler:RegisterGlobal('CommInvestMorphUpdate', CommInvestMorphUpdate)
-	widgetHandler:RegisterGlobal('CommInvestMorphFinished', CommInvestMorphFinished)
-	widgetHandler:RegisterGlobal('CommInvestMorphStart', CommInvestMorphStart)
-	widgetHandler:RegisterGlobal('CommInvestMorphStop', CommInvestMorphStop)
+    widgetHandler:RegisterGlobal('CommInvestMorphUpdate', CommInvestMorphUpdate)
+    widgetHandler:RegisterGlobal('CommInvestMorphFinished', CommInvestMorphFinished)
+    widgetHandler:RegisterGlobal('CommInvestMorphStart', CommInvestMorphStart)
+    widgetHandler:RegisterGlobal('CommInvestMorphStop', CommInvestMorphStop)
 
     local screenWidth, screenHeight = Spring.GetViewGeometry()
     local w = screenWidth * 0.4
@@ -152,23 +175,22 @@ function widget:Initialize()
     }
 
     local textWidths = {}
+    local totalTxtLen = 0
     for idx = 1, #headerNames do
-        textWidths[idx] = font:GetTextWidth(headerNames[idx], fontSize)
-        Spring.Echo("CommInvestment txt W:             " .. textWidths[idx])
+        local colTxtLen = font:GetTextWidth(headerNames[idx], fontSize)
+        textWidths[idx] = colTxtLen
+        Spring.Echo("CommInvestment txt W:             " .. colTxtLen)
+        totalTxtLen = totalTxtLen + colTxtLen
     end
-    local txtlen = 0
-    for idx = 1, #headerNames do
-        txtlen = txtlen + textWidths[idx]
-    end
-    local gap = (w - txtlen) / #headerNames
+    local whitespace = (w - totalTxtLen) / #headerNames
 
-    Spring.Echo("CommInvestment txtlen:            " .. txtlen)
-    Spring.Echo("CommInvestment gap:               " .. gap)
+    Spring.Echo("CommInvestment total text len:    " .. totalTxtLen)
+    Spring.Echo("CommInvestment whitespace:        " .. whitespace)
     Spring.Echo("CommInvestment num header names:  " .. #headerNames)
 
     local accumulator = 0
     for idx = 1, #headerNames do
-        local colWid = gap + textWidths[idx]
+        local colWid = whitespace + textWidths[idx]
         columnCenters[idx] = accumulator + colWid / 2
         Spring.Echo("CommInvestment col C:             " .. columnCenters[idx])
         accumulator = accumulator + colWid
