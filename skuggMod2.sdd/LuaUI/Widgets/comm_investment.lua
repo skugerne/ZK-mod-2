@@ -74,19 +74,27 @@ function rectangleVertices()
     gl.Vertex(-1, -1, 0)  -- bottom left
 end
 
+function lineVertices()
+    gl.Vertex(0,  0, 0)  -- top
+    gl.Vertex(0, -1, 0)  -- bottom
+end
+
 local rectangleDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, rectangleVertices)
+local lineDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, lineVertices)
 
 function widget:DrawScreenPost()
-    if windowMain ~= nil then
+    if columnCenters ~= nil then
         local screenWidth, screenHeight = Spring.GetViewGeometry()
-        gl.PushMatrix()
-        gl.Translate(windowMain.x,screenHeight - windowMain.y,1)
-        gl.Scale(10,10,1)
         gl.LineWidth(1)
         gl.DepthTest(false)
         gl.Color(1,0,0,1)
-        gl.CallList(rectangleDrawList)
-        gl.PopMatrix()
+        for idx = 1, #columnCenters do
+            gl.PushMatrix()
+            gl.Translate(windowMain.x + columnCenters[idx], screenHeight - windowMain.y, 1)
+            gl.Scale(1,windowMain.height,1)
+            gl.CallList(lineDrawList)
+            gl.PopMatrix()
+        end
     end
 end
 
