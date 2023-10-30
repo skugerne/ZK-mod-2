@@ -25,6 +25,7 @@ local fontSize = 14
 local windowMain
 local vsx,vsy = 0,0
 local columnCenters = {}
+local columnEdges = {}     -- should be one element shorter than columnCenters
 
 local grey = {.5,.5,.5,1}
 local white = {1,1,1,1}
@@ -83,14 +84,14 @@ local rectangleDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, rectangleVert
 local lineDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, lineVertices)
 
 function widget:DrawScreenPost()
-    if columnCenters ~= nil then
+    if columnEdges ~= nil then
         local screenWidth, screenHeight = Spring.GetViewGeometry()
         gl.LineWidth(1)
         gl.DepthTest(false)
         gl.Color(1,0,0,1)
-        for idx = 1, #columnCenters do
+        for idx = 1, #columnEdges do
             gl.PushMatrix()
-            gl.Translate(windowMain.x + columnCenters[idx], screenHeight - windowMain.y, 1)
+            gl.Translate(windowMain.x + columnEdges[idx], screenHeight - windowMain.y, 1)
             gl.Scale(1,windowMain.height,1)
             gl.CallList(lineDrawList)
             gl.PopMatrix()
@@ -202,8 +203,11 @@ function widget:Initialize()
         columnCenters[idx] = accumulator + colWid / 2
         Spring.Echo("CommInvestment col C:             " .. columnCenters[idx])
         accumulator = accumulator + colWid
+        columnEdges[idx] = accumulator
         generateLabelObject(1, idx, headerNames[idx], white)
     end
+
+    columnEdges[#columnEdges] = nil
 end
 
 function widget:Shutdown()
