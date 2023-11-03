@@ -24,8 +24,8 @@ local font -- dummy, need this to call GetTextWidth without looking up an instan
 local fontSize = 14
 local windowMain
 local vsx,vsy = 0,0
-local columnCenters = {}
-local columnEdges = {}     -- should be one element shorter than columnCenters
+local columnOffsets = {}
+local columnEdges = {}     -- should be one element shorter than columnOffsets
 
 local grey = {.5,.5,.5,1}
 local white = {1,1,1,1}
@@ -83,36 +83,43 @@ end
 local rectangleDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, rectangleVertices)
 local lineDrawList = gl.CreateList(gl.BeginEnd, GL.LINE_LOOP, lineVertices)
 
-function widget:DrawScreenPost()
-    if columnEdges ~= nil then
-        local screenWidth, screenHeight = Spring.GetViewGeometry()
-        gl.LineWidth(1)
-        gl.DepthTest(false)
-
-        gl.Color(1,1,0,1)
-        gl.PushMatrix()
-        gl.Translate(windowMain.x, screenHeight - windowMain.y, 1)
-        gl.Scale(windowMain.width,windowMain.height,1)
-        gl.CallList(rectangleDrawList)
-        gl.PopMatrix()
-
-        gl.Color(1,0,0,1)
-        for idx = 1, #columnEdges do
-            gl.PushMatrix()
-            gl.Translate(windowMain.x + columnEdges[idx], screenHeight - windowMain.y, 1)
-            gl.Scale(1,windowMain.height,1)
-            gl.CallList(lineDrawList)
-            gl.PopMatrix()
-        end
-    end
-end
+--function widget:DrawScreenPost()
+--    if columnEdges ~= nil then
+--        local screenWidth, screenHeight = Spring.GetViewGeometry()
+--        gl.LineWidth(1)
+--        gl.DepthTest(false)
+--
+--        gl.Color(1,1,0,1)
+--        gl.PushMatrix()
+--        gl.Translate(windowMain.x, screenHeight - windowMain.y, 1)
+--        gl.Scale(windowMain.width,windowMain.height,1)
+--        gl.CallList(rectangleDrawList)
+--        gl.PopMatrix()
+--
+--        gl.Color(0,1,0,1)
+--        gl.PushMatrix()
+--        gl.Translate(windowMain.x + windowMain.padding[1], screenHeight - windowMain.y - windowMain.padding[2], 1)
+--        gl.Scale(windowMain.clientWidth,windowMain.clientHeight,1)
+--        gl.CallList(rectangleDrawList)
+--        gl.PopMatrix()
+--
+--        gl.Color(1,0,0,1)
+--        for idx = 1, #columnEdges do
+--            gl.PushMatrix()
+--            gl.Translate(windowMain.x + columnEdges[idx], screenHeight - windowMain.y, 1)
+--            gl.Scale(1,windowMain.height,1)
+--            gl.CallList(lineDrawList)
+--            gl.PopMatrix()
+--        end
+--    end
+--end
 
 function generateLabelObject(row, col, txt, color)
     local extra = 5
     if row == 1 then extra = -5 end
     return Label:New {
         parent = windowMain,
-        x = columnCenters[col],
+        x = columnOffsets[col],
         y = 10 + (15 * (row - 1)) + extra,    -- vertical axis
         font = {
             color = color,
@@ -159,8 +166,6 @@ function widget:Initialize()
 		dockableSavePositionOnly = true,
 		name = "CommInvestment",
 		classname = "main_window_small_very_flat",
-		padding = {0,0,0,0},
-		margin = {0,0,0,0},
 		x = vsx-w, -- these are retained between games, suitable initial values mysterious
 		y = 100,   -- these are retained between games, suitable initial values mysterious
 		width = w,
@@ -186,33 +191,20 @@ function widget:Initialize()
         'cost',
         'time',
         'health',
-        'rng mul',
-        'dmg mul',
-        'spd mul'
+        'rng X',
+        'dmg X',
+        'spd X'
     }
 
-    local textWidths = {}
-    local totalTxtLen = 0
-    for idx = 1, #headerNames do
-        local colTxtLen = font:GetTextWidth(headerNames[idx], fontSize)
-        textWidths[idx] = colTxtLen
-        Spring.Echo("CommInvestment txt W:                   " .. colTxtLen)
-        totalTxtLen = totalTxtLen + colTxtLen
-    end
-    local whitespace = (w - totalTxtLen) / #headerNames
-
-    Spring.Echo("CommInvestment total text len:          " .. totalTxtLen)
-    Spring.Echo("CommInvestment whitespace:              " .. whitespace)
-    Spring.Echo("CommInvestment num header names:        " .. #headerNames)
-
+    -- there are mysteries about how column text is actually placed and centered
+    -- what we have here is merely sufficient
+    local colWidth = windowMain.clientWidth / #headerNames
     local accumulator = 0
     for idx = 1, #headerNames do
-        local colWid = whitespace + textWidths[idx]
-        columnCenters[idx] = accumulator
-        Spring.Echo("CommInvestment col C:                   " .. columnCenters[idx])
-        accumulator = accumulator + colWid
-        columnEdges[idx] = accumulator
+        columnOffsets[idx] = accumulator
         generateLabelObject(1, idx, headerNames[idx], white)
+        accumulator = accumulator + colWidth
+        columnEdges[idx] = accumulator + windowMain.padding[1]
     end
 
     columnEdges[#columnEdges] = nil
@@ -272,7 +264,7 @@ function CommInvestMorphStart(unitID, commProps)
                 speedMult =  generateLabelObject(col, 9, '-', grey)
             }
         }
-        windowMain:Resize(nil, (15 * trackedCommsLength) + 45)
+        windowMain:Resize(nil, (15 * trackedCommsLength) + 55)
     end
 
     if trackedComms[unitID].upgradeStatusAt then
