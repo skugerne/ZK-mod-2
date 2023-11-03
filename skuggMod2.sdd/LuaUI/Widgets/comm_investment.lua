@@ -69,10 +69,10 @@ function widget:GameFrame(n)
 end
 
 function rectangleVertices()
-    gl.Vertex(-1,  1, 0)  -- top left
-    gl.Vertex( 1,  1, 0)  -- top right
-    gl.Vertex( 1, -1, 0)  -- bottom right
-    gl.Vertex(-1, -1, 0)  -- bottom left
+    gl.Vertex(0, -1, 0)  -- bottom left
+    gl.Vertex(1, -1, 0)  -- bottom right
+    gl.Vertex(1,  0, 0)  -- top right
+    gl.Vertex(0,  0, 0)  -- top left
 end
 
 function lineVertices()
@@ -88,6 +88,14 @@ function widget:DrawScreenPost()
         local screenWidth, screenHeight = Spring.GetViewGeometry()
         gl.LineWidth(1)
         gl.DepthTest(false)
+
+        gl.Color(1,1,0,1)
+        gl.PushMatrix()
+        gl.Translate(windowMain.x, screenHeight - windowMain.y, 1)
+        gl.Scale(windowMain.width,windowMain.height,1)
+        gl.CallList(rectangleDrawList)
+        gl.PopMatrix()
+
         gl.Color(1,0,0,1)
         for idx = 1, #columnEdges do
             gl.PushMatrix()
@@ -100,10 +108,12 @@ function widget:DrawScreenPost()
 end
 
 function generateLabelObject(row, col, txt, color)
+    local extra = 5
+    if row == 1 then extra = -5 end
     return Label:New {
         parent = windowMain,
         x = columnCenters[col],
-        y = 10 + (15 * (row - 1)),
+        y = 10 + (15 * (row - 1)) + extra,    -- vertical axis
         font = {
             color = color,
             size = fontSize,
@@ -151,14 +161,10 @@ function widget:Initialize()
 		classname = "main_window_small_very_flat",
 		padding = {0,0,0,0},
 		margin = {0,0,0,0},
-		right = 0,
 		x = vsx-w, -- these are retained between games, suitable initial values mysterious
 		y = 100,   -- these are retained between games, suitable initial values mysterious
 		width = w,
 		height = h,
-		minWidth = w,              -- make width resize impossible
-		maxWidth = w,              -- make width resize impossible
-		minHeight = 60,
 		draggable = true,
 		resizable = false,
 		tweakDraggable = true,
@@ -166,10 +172,12 @@ function widget:Initialize()
 		parentWidgetName = Chili.Screen0
 	}
 
-    Spring.Echo("CommInvestment windowMain.width:  " .. windowMain.width)
-    Spring.Echo("CommInvestment windowMain.height: " .. windowMain.height)
-    Spring.Echo("CommInvestment windowMain.x:      " .. windowMain.x)
-    Spring.Echo("CommInvestment windowMain.y:      " .. windowMain.y)
+    Spring.Echo("CommInvestment windowMain.width:        " .. windowMain.width)
+    Spring.Echo("CommInvestment windowMain.height:       " .. windowMain.height)
+    Spring.Echo("CommInvestment windowMain.x:            " .. windowMain.x)
+    Spring.Echo("CommInvestment windowMain.y:            " .. windowMain.y)
+    Spring.Echo("CommInvestment windowMain.clientWidth:  " .. windowMain.clientWidth)
+    Spring.Echo("CommInvestment windowMain.clientHeight: " .. windowMain.clientHeight)
 
     local headerNames = {
         'unitID',
@@ -188,20 +196,20 @@ function widget:Initialize()
     for idx = 1, #headerNames do
         local colTxtLen = font:GetTextWidth(headerNames[idx], fontSize)
         textWidths[idx] = colTxtLen
-        Spring.Echo("CommInvestment txt W:             " .. colTxtLen)
+        Spring.Echo("CommInvestment txt W:                   " .. colTxtLen)
         totalTxtLen = totalTxtLen + colTxtLen
     end
     local whitespace = (w - totalTxtLen) / #headerNames
 
-    Spring.Echo("CommInvestment total text len:    " .. totalTxtLen)
-    Spring.Echo("CommInvestment whitespace:        " .. whitespace)
-    Spring.Echo("CommInvestment num header names:  " .. #headerNames)
+    Spring.Echo("CommInvestment total text len:          " .. totalTxtLen)
+    Spring.Echo("CommInvestment whitespace:              " .. whitespace)
+    Spring.Echo("CommInvestment num header names:        " .. #headerNames)
 
     local accumulator = 0
     for idx = 1, #headerNames do
         local colWid = whitespace + textWidths[idx]
-        columnCenters[idx] = accumulator + colWid / 2
-        Spring.Echo("CommInvestment col C:             " .. columnCenters[idx])
+        columnCenters[idx] = accumulator
+        Spring.Echo("CommInvestment col C:                   " .. columnCenters[idx])
         accumulator = accumulator + colWid
         columnEdges[idx] = accumulator
         generateLabelObject(1, idx, headerNames[idx], white)
@@ -264,7 +272,7 @@ function CommInvestMorphStart(unitID, commProps)
                 speedMult =  generateLabelObject(col, 9, '-', grey)
             }
         }
-        windowMain:Resize(nil, (15 * trackedCommsLength) + 35)
+        windowMain:Resize(nil, (15 * trackedCommsLength) + 45)
     end
 
     if trackedComms[unitID].upgradeStatusAt then
