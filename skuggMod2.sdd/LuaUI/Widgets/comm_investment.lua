@@ -33,20 +33,20 @@ local white = {1,1,1,1}
 function widget:GameFrame(n)
     frame = frame - 1
     totalFrame = totalFrame + 1
-    if frame <= 0 then 
+    if frame <= 0 then
         frame = 11 -- just under 3 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
             Spring.Echo("GameFrame() color (r g b) " .. unitData.commProps.r .. "/" .. unitData.commProps.g .. "/" .. unitData.commProps.b)
             Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
-            Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
-            Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
-            Spring.Echo("GameFrame() speedMult " .. unitData.commProps.speedMult)
-            Spring.Echo("GameFrame() commLevel " .. unitData.commProps.commLevel)
-            Spring.Echo("GameFrame() commCost " .. unitData.commProps.commCost)
+            --Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
+            --Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
+            --Spring.Echo("GameFrame() speedMult " .. unitData.commProps.speedMult)
+            --Spring.Echo("GameFrame() commLevel " .. unitData.commProps.commLevel)
+            --Spring.Echo("GameFrame() commCost " .. unitData.commProps.commCost)
             Spring.Echo("GameFrame() teamID " .. unitData.commProps.teamID)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
 
-            unitData.labels.player:SetCaption((name or "-"))
+            unitData.labels.player:SetCaption((unitData.commProps.name or "-"))
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
             unitData.labels.health:SetCaption(unitData.commProps.health)
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
@@ -55,12 +55,12 @@ function widget:GameFrame(n)
 
             -- show color of commander (the wrong color)
             -- except for the problem with units being captured, could set label color during initialization
-            local fontparams = {
-                color = {r,g,b,1},
-                size = fontSize,
-                shadow = true
-            }
-            unitData.labels.unitID.font = Chili.Font:New(fontparams)
+            --local fontparams = {
+            --    color = {r,g,b,1},
+            --    size = fontSize,
+            --    shadow = true
+            --}
+            --unitData.labels.unitID.font = Chili.Font:New(fontparams)
             unitData.labels.unitID:SetCaption(unitID)
             unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
             unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
@@ -185,8 +185,8 @@ function widget:Initialize()
     Spring.Echo("CommInvestment windowMain.clientHeight: " .. windowMain.clientHeight)
 
     local headerNames = {
-        'unitID',
         'player',
+        'unitID',
         'level',
         'cost',
         'time',
@@ -198,12 +198,13 @@ function widget:Initialize()
 
     -- there are mysteries about how column text is actually placed and centered
     -- what we have here is merely sufficient
-    local colWidth = windowMain.clientWidth / #headerNames
-    local accumulator = 0
+    local colWidth = windowMain.clientWidth / (#headerNames+1)
+    local accumulator = colWidth/2
     for idx = 1, #headerNames do
         columnOffsets[idx] = accumulator
         generateLabelObject(1, idx, headerNames[idx], white)
         accumulator = accumulator + colWidth
+        if idx == 1 then accumulator = accumulator + colWidth/2 end
         columnEdges[idx] = accumulator + windowMain.padding[1]
     end
 
@@ -253,8 +254,8 @@ function CommInvestMorphStart(unitID, commProps)
             index = trackedCommsLength,
             commProps = commProps,
             labels = {
-                unitID =     generateLabelObject(col, 1, unitID, white),
-                player =     generateLabelObject(col, 2, '-', grey),
+                player =     generateLabelObject(col, 1, '-', grey),
+                unitID =     generateLabelObject(col, 2, unitID, grey),
                 level =      generateLabelObject(col, 3, '-', grey),
                 totalCost =  generateLabelObject(col, 4, '-', grey),
                 totalTime =  generateLabelObject(col, 5, '-', grey),
@@ -290,13 +291,17 @@ end
 
 function CommInvestMorphFinished(oldUnitID, newUnitID, commProps)
     Spring.Echo("Got a call to CommInvestMorphFinished, oldUnitID=" .. oldUnitID .. ", newUnitID=" .. newUnitID .. ".")
-    CommInvestMorphStop(oldUnitID, 0)
-    if trackedComms[newUnitID] == nil then
-        trackedComms[newUnitID] = trackedComms[oldUnitID]
-        trackedComms[oldUnitID] = nil
-        Spring.Echo("Deleted unitID=" .. oldUnitID .. "from list of tracked comms.")
-        trackedComms[newUnitID].commProps = commProps
+    if trackedComms[oldUnitID] ~= nil then
+        CommInvestMorphStop(oldUnitID, 0)
+        if trackedComms[newUnitID] == nil then
+            trackedComms[newUnitID] = trackedComms[oldUnitID]
+            trackedComms[oldUnitID] = nil
+            Spring.Echo("Deleted unitID=" .. oldUnitID .. " from list of tracked comms.")
+            trackedComms[newUnitID].commProps = commProps
+        else
+            Spring.Echo("FROWN: A known unitID been given as a new unitID.")
+        end
     else
-        Spring.Echo("FROWN: A known unitID been given as a new unitID.")
+        Spring.Echo("FROWN: A comm morph is finished, but the old unitID is unknown.")
     end
 end
