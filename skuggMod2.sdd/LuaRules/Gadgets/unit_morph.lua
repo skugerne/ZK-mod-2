@@ -948,30 +948,23 @@ for i = 1, #teamList do
 	local teamID = teamList[i]
 	if teamID ~= Spring.GetGaiaTeamID() then
 		local _,_,isDead,isAI,_,allyTeamID = Spring.GetTeamInfo(teamID, false)
-		local red, grn, blu = Spring.GetTeamColor(teamID)   -- for some reason this is always the same result
 		teamInfo[teamID] = {
 			isAI = isAI,
 			allyTeamID = allyTeamID,
 			playerID = nil,
-			name = nil,
-			r = red,
-			g = grn,
-			b = blu
+			name = nil
 		}
 		if isAI then isAI = "true" else isAI = "false" end
 		Spring.Echo("Have teamID=" .. teamID .. " with isAI " .. (isAI or "-") .. " allyTeamID " .. (allyTeamID or "-"))
-		Spring.Echo("Have r=" .. red .. " g=" .. grn .. " b=" .. blu)
 	end
 end
 
 for i = 1, #playerlist do
 	local playerID = playerlist[i]
 	local name, _, _, teamID, allyTeamID = Spring.GetPlayerInfo(playerID)
-	local red, grn, blu = Spring.GetTeamColor(teamID) -- sanity check
 	teamInfo[teamID].playerID = playerID
 	teamInfo[teamID].name = name
 	Spring.Echo("Have playerID=" .. playerID .. " with name " .. (name or "-") .. " teamID " .. (teamID or "-") .. " allyTeamID " .. (allyTeamID or "-"))
-	Spring.Echo("Have r=" .. red .. " g=" .. grn .. " b=" .. blu) -- sanity check
 end
 
 local function IsComm(unitID)

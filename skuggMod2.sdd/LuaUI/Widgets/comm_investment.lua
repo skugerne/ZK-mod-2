@@ -36,8 +36,7 @@ function widget:GameFrame(n)
     if frame <= 0 then
         frame = 11 -- just under 3 times per second (engine does 30 frames per second)
         for unitID, unitData in pairs(trackedComms) do
-            Spring.Echo("GameFrame() color (r g b) " .. unitData.commProps.r .. "/" .. unitData.commProps.g .. "/" .. unitData.commProps.b)
-            Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
+            --Spring.Echo("GameFrame() name " .. (unitData.commProps.name or "-"))       -- FIXME: nil for AIs
             --Spring.Echo("GameFrame() rangeMult " .. unitData.commProps.rangeMult)
             --Spring.Echo("GameFrame() damageMult " .. unitData.commProps.damageMult)
             --Spring.Echo("GameFrame() speedMult " .. unitData.commProps.speedMult)
@@ -46,21 +45,28 @@ function widget:GameFrame(n)
             Spring.Echo("GameFrame() teamID " .. unitData.commProps.teamID)
             Spring.Echo("GameFrame() allyTeamID " .. unitData.commProps.allyTeamID)
 
-            unitData.labels.player:SetCaption((unitData.commProps.name or "-"))
+            local _,_,_,isAI,_,_ = Spring.GetTeamInfo(unitData.commProps.teamID, false)
+            local red, grn, blu = Spring.GetTeamColor(unitData.commProps.teamID)   -- for some reason this is always the same result
+            local name = (unitData.commProps.name or "-")
+            if isAI then
+                _, name = Spring.GetAIInfo(unitData.commProps.teamID)
+            end
+
+            unitData.labels.player:SetCaption((name or "-"))
             unitData.labels.level:SetCaption("L" .. (unitData.commProps.commLevel+1))
             unitData.labels.health:SetCaption(unitData.commProps.health)
             unitData.labels.rangeMult:SetCaption(string.format("%.2f",unitData.commProps.rangeMult))
             unitData.labels.damageMult:SetCaption(string.format("%.2f",unitData.commProps.damageMult))
             unitData.labels.speedMult:SetCaption(string.format("%.2f",unitData.commProps.speedMult))
 
-            -- show color of commander (the wrong color)
+            -- show color of commander
             -- except for the problem with units being captured, could set label color during initialization
-            --local fontparams = {
-            --    color = {r,g,b,1},
-            --    size = fontSize,
-            --    shadow = true
-            --}
-            --unitData.labels.unitID.font = Chili.Font:New(fontparams)
+            local fontparams = {
+                color = {red,grn,blu,1},
+                size = fontSize,
+                shadow = true
+            }
+            unitData.labels.unitID.font = Chili.Font:New(fontparams)
             unitData.labels.unitID:SetCaption(unitID)
             unitData.labels.totalCost:SetCaption(math.floor(trackedComms[unitID].investedMetal+trackedComms[unitID].uncommittedMetal+0.5) .. "m")
             unitData.labels.totalTime:SetCaption(math.floor((trackedComms[unitID].investedTime/30.0)+0.5) .. "s")
